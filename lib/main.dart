@@ -621,6 +621,10 @@ class _LedgerHomeState extends State<LedgerHome> with WidgetsBindingObserver {
       ),
       body: Stack(
         children: [
+          // 后备底色，防止背景图加载前黑屏
+          Positioned.fill(
+            child: Container(color: const Color(0xFFF8FAF6)),
+          ),
           // 背景图片
           Positioned.fill(
             child: Image.asset('assets/Application/bg.jpg', fit: BoxFit.cover),
