@@ -20,9 +20,10 @@ import 'package:ledger_app/pages/entry_form_page.dart';
 import 'package:ledger_app/pages/search_page.dart';
 import 'package:ledger_app/pages/settings_page.dart';
 import 'package:ledger_app/pages/statistics_page.dart';
+import 'package:ledger_app/pages/statistics_prefs.dart';
 import 'package:ledger_app/services/update_service.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   SystemChrome.setSystemUIOverlayStyle(
@@ -32,6 +33,7 @@ void main() {
       statusBarBrightness: Brightness.light,
     ),
   );
+  await StatisticsPagePrefs.load(); // 提前加载统计页设置
   runApp(const LedgerApp());
 }
 

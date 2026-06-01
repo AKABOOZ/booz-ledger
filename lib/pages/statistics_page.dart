@@ -3,9 +3,9 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:ledger_app/models/account.dart';
+import 'package:ledger_app/pages/statistics_prefs.dart';
 import 'package:ledger_app/models/category.dart';
 import 'package:ledger_app/models/enums.dart';
 import 'package:ledger_app/models/ledger_entry.dart';
@@ -23,20 +23,16 @@ class StatisticsPage extends StatefulWidget {
 }
 
 class _StatisticsPageState extends State<StatisticsPage> {
-  static const _statsIsYearlyKey = 'statistics_is_yearly';
-  static const _statsYearKey = 'statistics_year';
-  static const _statsMonthKey = 'statistics_month';
-
-  late DateTime _month = DateTime(DateTime.now().year, DateTime.now().month);
-  late int _year = DateTime.now().year;
+  late DateTime _month =
+      DateTime(StatisticsPagePrefs.year, StatisticsPagePrefs.month);
+  late int _year = StatisticsPagePrefs.year;
   bool _groupByMajor = false;
-  bool _isYearlyView = false;
+  bool _isYearlyView = StatisticsPagePrefs.isYearly;
   LedgerEntryType _selectedType = LedgerEntryType.expense;
 
   @override
   void initState() {
     super.initState();
-    _restoreStatisticsPeriod();
   }
 
   @override
@@ -181,26 +177,11 @@ class _StatisticsPageState extends State<StatisticsPage> {
     );
   }
 
-  Future<void> _restoreStatisticsPeriod() async {
-    final prefs = await SharedPreferences.getInstance();
-    if (!mounted) {
-      return;
-    }
-    final now = DateTime.now();
-    final year = prefs.getInt(_statsYearKey) ?? now.year;
-    final month = prefs.getInt(_statsMonthKey) ?? now.month;
-    setState(() {
-      _isYearlyView = prefs.getBool(_statsIsYearlyKey) ?? false;
-      _year = year;
-      _month = DateTime(year, month.clamp(1, 12));
-    });
-  }
-
   Future<void> _saveStatisticsPeriod() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_statsIsYearlyKey, _isYearlyView);
-    await prefs.setInt(_statsYearKey, _isYearlyView ? _year : _month.year);
-    await prefs.setInt(_statsMonthKey, _month.month);
+    StatisticsPagePrefs.isYearly = _isYearlyView;
+    StatisticsPagePrefs.year = _isYearlyView ? _year : _month.year;
+    StatisticsPagePrefs.month = _month.month;
+    await StatisticsPagePrefs.save();
   }
 
   Future<void> _showPeriodPicker() async {
