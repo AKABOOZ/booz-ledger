@@ -31,20 +31,20 @@ class _StatisticsPageState extends State<StatisticsPage> {
   late int _year = DateTime.now().year;
   bool _groupByMajor = false;
   bool _isYearlyView = false;
+  bool _isLoaded = false;
   LedgerEntryType _selectedType = LedgerEntryType.expense;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        unawaited(_restoreStatisticsPeriod());
-      }
-    });
+    _restoreStatisticsPeriod();
   }
 
   @override
   Widget build(BuildContext context) {
+    if (!_isLoaded) {
+      return const Center(child: CircularProgressIndicator());
+    }
     final store = LedgerScope.of(context);
     final entries = _isYearlyView
         ? store.entries.where((entry) {
@@ -197,6 +197,7 @@ class _StatisticsPageState extends State<StatisticsPage> {
       _isYearlyView = prefs.getBool(_statsIsYearlyKey) ?? false;
       _year = year;
       _month = DateTime(year, month.clamp(1, 12));
+      _isLoaded = true;
     });
   }
 
