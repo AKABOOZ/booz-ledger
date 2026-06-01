@@ -256,10 +256,34 @@
   - 页面容器保持透明，让背景图正常显示在最上层
 - 注意：不要把页面容器改成不透明，否则会把背景图完全挡住
 
+### 需求变更 7：添加自动更新功能
+
+- APP 启动时自动检测 GitHub Releases 最新版本
+- 有新版本弹窗提示，支持下载安装
+- 设置页新增”检查更新”卡片，支持手动检查
+- GitHub 仓库：`AKABOOZ/booz-ledger`（Public）
+- APK 安装使用 Android 原生 Intent + FileProvider
+
+### 需求变更 8：优化语音记账别名匹配
+
+- 新增大量支出分类别名（快递→邮寄费、房贷→房租、deepseek→AI使用费 等）
+- 别名表在 `lib/services/ledger_text_parser.dart` 的 `_matchExpenseCategory` 方法中
+
+### 需求变更 9：修复统计页切换动画问题
+
+- 问题：每次切换到统计页，排行榜卡片会有展开动画
+- 原因：页面先用默认月份渲染，再异步恢复保存的月份，数据量变化触发动画
+- 解决方案：
+  - APP 启动时预加载统计页月份设置（`StatisticsPagePrefs`）
+  - 统计页直接用内存中的值初始化，无异步加载
+  - 展开/收起改用 `AnimationController` + `SizeTransition`，只由按钮触发
+
 ### 对后续 AI 的提醒
 
 - 不要把根目录 React/Vite 工程当成主线
 - 不要轻易回退备份清理逻辑
 - 修改同步、导入导出、账户余额联动时，要一起验证数据一致性
 - 在没有充分预算前，不要贸然做”大拆 main.dart”式重构
-- 本项目已初始化 git 仓库（`/Users/akabooz/Documents/记账APP_副本/.git`），日常修改后应 `git commit`
+- 本项目已初始化 git 仓库，日常修改后应 `git commit`
+- GitHub CLI (`gh`) 已安装，可用于自动发布版本到 GitHub Release
+- 发版命令：`gh release create v<VERSION> --repo AKABOOZ/booz-ledger --title “波哥记账 v<VERSION>” --notes “更新内容” <APK路径>`

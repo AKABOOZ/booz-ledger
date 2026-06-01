@@ -151,8 +151,34 @@ flutter build apk --release
 ## 版本管理
 
 - 项目已初始化 git 仓库（根目录 `.git`）
-- 第一个 commit 记录了基础版功能
 - 日常修改后通过 `git add -A && git commit -m "说明"` 提交
+- GitHub 仓库：`AKABOOZ/booz-ledger`（Public）
+- GitHub CLI (`gh`) 已安装并认证，可用于自动发布版本
+
+## 自动更新功能
+
+- APP 启动时检测 GitHub Releases 最新版本
+- 版本对比逻辑在 `lib/services/update_service.dart`
+- APK 安装使用 Android 原生 Intent + FileProvider
+- GitHub API 地址：`https://api.github.com/repos/AKABOOZ/booz-ledger/releases/latest`
+
+## 发布新版本
+
+```bash
+# 1. 修改 pubspec.yaml 中的版本号
+# 2. 构建 release APK
+flutter build apk --release
+
+# 3. 提交代码
+git add -A && git commit -m "v<VERSION> 更新说明"
+
+# 4. 发布到 GitHub Release
+gh release create v<VERSION> \
+  --repo AKABOOZ/booz-ledger \
+  --title "波哥记账 v<VERSION>" \
+  --notes "更新内容" \
+  android/app/build/outputs/flutter-apk/app-release.apk
+```
 
 ## 数据同步平台
 

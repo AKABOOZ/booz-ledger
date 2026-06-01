@@ -133,23 +133,15 @@
 - [lib](/Users/akabooz/Documents/记账APP_副本/lib)
   - Flutter 主代码目录
   - 当前几乎所有业务、UI、状态、服务都集中在 `main.dart`
+- [lib/services](/Users/akabooz/Documents/记账APP_副本/lib/services)
+  - 服务层：AI、语音、OCR、文本解析、更新检测
+- [lib/pages](/Users/akabooz/Documents/记账APP_副本/lib/pages)
+  - 页面：统计、设置、搜索、记账表单
 - [assets](/Users/akabooz/Documents/记账APP_副本/assets)
   - 图标、背景图、字体资源
 - [android](/Users/akabooz/Documents/记账APP_副本/android)
   - Android 工程
   - 当前 Android 构建、安装、调试都主要围绕这里
-- [ios](/Users/akabooz/Documents/记账APP_副本/ios)
-  - iOS 工程模板
-- [macos](/Users/akabooz/Documents/记账APP_副本/macos)
-  - macOS 工程模板
-- [windows](/Users/akabooz/Documents/记账APP_副本/windows)
-  - Windows 工程模板
-- [linux](/Users/akabooz/Documents/记账APP_副本/linux)
-  - Linux 工程模板
-- [web](/Users/akabooz/Documents/记账APP_副本/web)
-  - Flutter Web 模板资源
-- [test](/Users/akabooz/Documents/记账APP_副本/test)
-  - Flutter 测试，目前只有一个非常轻量的 widget smoke test
 
 ### 明显的历史遗留 / 非主线目录
 
@@ -215,6 +207,14 @@
     - 本地备份只保留 `1` 份
     - NAS 仍保留 `9` 份
     - WebDAV 同步产生的本地中间备份会自动删除
+- 自动更新
+  - APP 启动时自动检测 GitHub Releases 新版本
+  - 下载 APK 并触发系统安装界面
+  - 设置页手动检查更新
+  - 版本对比逻辑（major.minor.patch）
+- 语音记账优化
+  - 新增大量支出分类别名匹配规则
+  - 覆盖更多日常用语（快递、房贷、AI工具等）
 
 ### 待完成功能 / 可继续演进项
 
@@ -232,7 +232,10 @@
 - iOS / 桌面端实机验证
   - 工程模板在，但从当前上下文看主要只验证了 Android
 - 分类管理能力
-  - 当前提示“本版本暂不开放编辑”，说明分类管理仍有限制
+  - 当前提示”本版本暂不开放编辑”，说明分类管理仍有限制
+- 自动更新方案优化
+  - 当前使用 GitHub Releases（源码公开）
+  - 可考虑迁移到蒲公英/fir.im 等国内平台（下载更快、源码不暴露）
 
 ## 6. 已知问题 / 坑点（必须看）
 

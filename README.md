@@ -1,57 +1,75 @@
-# React + TypeScript + Vite
+# 波哥记账APP
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+一款简洁的个人记账应用，支持语音输入、图片识别、AI 智能分类，数据可同步到 NAS/WebDAV。
 
-Currently, two official plugins are available:
+## 核心功能
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **流水管理**：支出、收入、转账，自动修正账户余额
+- **智能录入**：语音识别（百度）、图片 OCR + AI 理解账单
+- **数据同步**：WebDAV 手动/自动同步到 NAS
+- **统计分析**：分类排行、筛选统计、时间维度分析
+- **账户管理**：现金、银行卡、在线支付、信用卡等多类型支持
+- **自动更新**：APP 启动时自动检测 GitHub 新版本并提示更新
 
-## Expanding the ESLint configuration
+## 技术栈
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- Flutter (Dart)
+- Material 3 UI
+- SharedPreferences 本地存储
+- 百度语音/OCR + DeepSeek/通义千问 AI
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+## 构建
+
+```bash
+# 安装依赖
+flutter pub get
+
+# 构建 release APK
+flutter build apk --release
+
+# APK 输出路径
+# android/app/build/outputs/flutter-apk/app-release.apk
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 安装到手机
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+```bash
+adb devices
+adb -s <DEVICE_ID> install -r android/app/build/outputs/flutter-apk/app-release.apk
+```
 
-export default tseslint.config({
-  extends: [
-    // other configs...
-    // Enable lint rules for React
-    reactX.configs['recommended-typescript'],
-    // Enable lint rules for React DOM
-    reactDom.configs.recommended,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+## 项目结构
+
+```
+lib/
+├── main.dart              # 主入口 + 首页
+├── models/                # 数据模型
+├── pages/                 # 页面
+│   ├── statistics_page.dart
+│   ├── settings_page.dart
+│   ├── search_page.dart
+│   └── entry_form_page.dart
+├── services/              # 服务层
+│   ├── ai_ledger_service.dart
+│   ├── baidu_speech_service.dart
+│   ├── baidu_ocr_service.dart
+│   ├── ledger_text_parser.dart
+│   └── update_service.dart
+├── store/                 # 状态管理
+├── utils/                 # 工具函数
+└── widgets/               # 通用组件
+```
+
+## 版本发布
+
+1. 修改 `pubspec.yaml` 中的版本号
+2. `flutter build apk --release`
+3. 上传 APK 到 GitHub Release
+
+```bash
+gh release create v<VERSION> \
+  --repo AKABOOZ/booz-ledger \
+  --title "波哥记账 v<VERSION>" \
+  --notes "更新内容" \
+  android/app/build/outputs/flutter-apk/app-release.apk
 ```
