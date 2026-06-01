@@ -31,7 +31,6 @@ class _StatisticsPageState extends State<StatisticsPage> {
   late int _year = DateTime.now().year;
   bool _groupByMajor = false;
   bool _isYearlyView = false;
-  bool _periodRestored = false;
   LedgerEntryType _selectedType = LedgerEntryType.expense;
 
   @override
@@ -926,6 +925,7 @@ class StatisticsBlock extends StatefulWidget {
     required this.type,
     required this.groupByMajor,
     required this.store,
+    required this.periodRestored,
     this.childrenByGroup = const {},
     this.onCategoryTap,
     super.key,
@@ -941,14 +941,37 @@ class StatisticsBlock extends StatefulWidget {
   final LedgerEntryType type;
   final bool groupByMajor;
   final LedgerStore store;
+  final bool periodRestored;
   final void Function(String category)? onCategoryTap;
 
   @override
   State<StatisticsBlock> createState() => _StatisticsBlockState();
 }
 
-class _StatisticsBlockState extends State<StatisticsBlock> {
+class _StatisticsBlockState extends State<StatisticsBlock>
+    with SingleTickerProviderStateMixin {
   bool _expanded = false;
+  late final AnimationController _expandController;
+  late final Animation<double> _expandAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _expandController = AnimationController(
+      duration: const Duration(milliseconds: 320),
+      vsync: this,
+    );
+    _expandAnimation = CurvedAnimation(
+      parent: _expandController,
+      curve: Curves.easeInOutCubic,
+    );
+  }
+
+  @override
+  void dispose() {
+    _expandController.dispose();
+    super.dispose();
+  }
 
   @override
   void didUpdateWidget(covariant StatisticsBlock oldWidget) {
@@ -957,13 +980,16 @@ class _StatisticsBlockState extends State<StatisticsBlock> {
         oldWidget.type != widget.type ||
         oldWidget.groupByMajor != widget.groupByMajor) {
       _expanded = false;
+      _expandController.reset();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final visibleEntries = _visibleEntries(widget.stats);
-    final canExpand = widget.stats.length > 8;
+    final entriesList = widget.stats.entries.toList();
+    final canExpand = entriesList.length > 8;
+    final alwaysVisible = canExpand ? entriesList.take(8).toList() : entriesList;
+    final extraItems = canExpand ? entriesList.skip(8).toList() : <MapEntry<String, CategoryStat>>[];
     final totalCount = widget.stats.values.fold<int>(
       0,
       (sum, stat) => sum + stat.count,
@@ -1061,14 +1087,9 @@ class _StatisticsBlockState extends State<StatisticsBlock> {
               const Divider(height: 1, thickness: 1, color: Color(0xFFE9EFEC)),
               const SizedBox(height: 14),
               ClipRect(
-                child: AnimatedSize(
-                  duration: _periodRestored
-                      ? const Duration(milliseconds: 320)
-                      : Duration.zero,
-                  curve: Curves.easeInOutCubic,
-                  alignment: Alignment.topCenter,
-                  child: Column(
-                    children: visibleEntries.asMap().entries.map((visible) {
+                child: Column(
+                  children: [
+                    ...alwaysVisible.asMap().entries.map((visible) {
                       final index = visible.key;
                       final entry = visible.value;
                       final childStats = widget.childrenByGroup[entry.key];
@@ -1084,30 +1105,54 @@ class _StatisticsBlockState extends State<StatisticsBlock> {
                             ? null
                             : () => widget.onCategoryTap!(entry.key),
                       );
-                    }).toList(),
-                  ),
+                    }),
+                    if (canExpand)
+                      SizeTransition(
+                        sizeFactor: _expandAnimation,
+                        axisAlignment: -1,
+                        child: Column(
+                          children: extraItems.asMap().entries.map((visible) {
+                            final index = visible.key + 8;
+                            final entry = visible.value;
+                            final childStats =
+                                widget.childrenByGroup[entry.key];
+                            return StatRankRow(
+                              name: entry.key,
+                              amount: entry.value.total,
+                              total: widget.total,
+                              iconColor: _iconColorFor(entry.key),
+                              chartColor: _chartColorFor(entry.key, index),
+                              icon: _iconFor(entry.key),
+                              children: childStats,
+                              onTap: widget.onCategoryTap == null
+                                  ? null
+                                  : () => widget.onCategoryTap!(entry.key),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                  ],
                 ),
               ),
               if (canExpand)
                 StatisticsExpandButton(
                   expanded: _expanded,
-                  onTap: () => setState(() => _expanded = !_expanded),
+                  onTap: () {
+                    setState(() {
+                      _expanded = !_expanded;
+                    });
+                    if (_expanded) {
+                      _expandController.forward();
+                    } else {
+                      _expandController.reverse();
+                    }
+                  },
                 ),
             ],
           ],
         ),
       ),
     );
-  }
-
-  List<MapEntry<String, CategoryStat>> _visibleEntries(
-    Map<String, CategoryStat> source,
-  ) {
-    final entries = source.entries.toList();
-    if (_expanded || entries.length <= 8) {
-      return entries;
-    }
-    return entries.take(8).toList();
   }
 
   IconData _iconFor(String label) {
