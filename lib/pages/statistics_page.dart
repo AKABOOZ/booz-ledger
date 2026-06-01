@@ -31,6 +31,7 @@ class _StatisticsPageState extends State<StatisticsPage> {
   late int _year = DateTime.now().year;
   bool _groupByMajor = false;
   bool _isYearlyView = false;
+  bool _periodRestored = false;
   LedgerEntryType _selectedType = LedgerEntryType.expense;
 
   @override
@@ -193,6 +194,7 @@ class _StatisticsPageState extends State<StatisticsPage> {
       _isYearlyView = prefs.getBool(_statsIsYearlyKey) ?? false;
       _year = year;
       _month = DateTime(year, month.clamp(1, 12));
+      _periodRestored = true;
     });
   }
 
@@ -1060,7 +1062,9 @@ class _StatisticsBlockState extends State<StatisticsBlock> {
               const SizedBox(height: 14),
               ClipRect(
                 child: AnimatedSize(
-                  duration: const Duration(milliseconds: 320),
+                  duration: _periodRestored
+                      ? const Duration(milliseconds: 320)
+                      : Duration.zero,
                   curve: Curves.easeInOutCubic,
                   alignment: Alignment.topCenter,
                   child: Column(
