@@ -148,6 +148,12 @@ flutter build apk --release
 - 没有后端服务发布
 - 主要是本地构建 APK，然后通过 ADB 手工安装到 Android 设备
 
+## 版本管理
+
+- 项目已初始化 git 仓库（根目录 `.git`）
+- 第一个 commit 记录了基础版功能
+- 日常修改后通过 `git add -A && git commit -m "说明"` 提交
+
 ## 数据同步平台
 
 - 用户自己的 NAS / WebDAV

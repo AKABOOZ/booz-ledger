@@ -246,9 +246,20 @@
   - `android/app/build/outputs/apk/debug/app-debug.apk`
 - 最近多次安装都依赖这个经验完成
 
+### 需求变更 6：修复 APP 启动时背景全黑闪一下
+
+- 问题：打开 APP 或切换 Tab 时，透明容器叠加导致底层显示黑色，约半秒后背景图加载完成才恢复正常
+- 根因：Scaffold 和所有页面容器都是透明背景，完全依赖 `bg.jpg` 一张图打底，图片解码延迟时透出黑色
+- 修复方案（已落地）：
+  - Android `NormalTheme` 窗口背景色从 `@android:color/white` 改为 `#FFF8FAF6`（与 APP 主题色一致）
+  - Flutter `body` Stack 中在背景图**下方**增加一层 `Container(color: Color(0xFFF8FAF6))` 作为后备色
+  - 页面容器保持透明，让背景图正常显示在最上层
+- 注意：不要把页面容器改成不透明，否则会把背景图完全挡住
+
 ### 对后续 AI 的提醒
 
 - 不要把根目录 React/Vite 工程当成主线
 - 不要轻易回退备份清理逻辑
 - 修改同步、导入导出、账户余额联动时，要一起验证数据一致性
-- 在没有充分预算前，不要贸然做“大拆 main.dart”式重构
+- 在没有充分预算前，不要贸然做”大拆 main.dart”式重构
+- 本项目已初始化 git 仓库（`/Users/akabooz/Documents/记账APP_副本/.git`），日常修改后应 `git commit`
