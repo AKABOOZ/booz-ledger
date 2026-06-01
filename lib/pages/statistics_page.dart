@@ -951,7 +951,6 @@ class StatisticsBlock extends StatefulWidget {
 
 class _StatisticsBlockState extends State<StatisticsBlock> {
   bool _expanded = false;
-  bool _hasInteracted = false;
 
   @override
   void didUpdateWidget(covariant StatisticsBlock oldWidget) {
@@ -1065,9 +1064,7 @@ class _StatisticsBlockState extends State<StatisticsBlock> {
               const SizedBox(height: 14),
               ClipRect(
                 child: AnimatedSize(
-                  duration: _hasInteracted
-                      ? const Duration(milliseconds: 320)
-                      : Duration.zero,
+                  duration: const Duration(milliseconds: 320),
                   curve: Curves.easeInOutCubic,
                   alignment: Alignment.topCenter,
                   child: Column(
@@ -1094,10 +1091,7 @@ class _StatisticsBlockState extends State<StatisticsBlock> {
               if (canExpand)
                 StatisticsExpandButton(
                   expanded: _expanded,
-                  onTap: () => setState(() {
-                    _hasInteracted = true;
-                    _expanded = !_expanded;
-                  }),
+                  onTap: () => setState(() => _expanded = !_expanded),
                 ),
             ],
           ],
