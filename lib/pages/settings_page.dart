@@ -178,25 +178,6 @@ class _SettingsPageState extends State<SettingsPage> {
           description: '当前版本：v$_appVersion',
           onTap: () => _checkForUpdate(context),
         ),
-        const SizedBox(height: 16),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  '关于应用',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
-                ),
-                const SizedBox(height: 16),
-                _buildInfoRow('版本', _appVersion),
-                const SizedBox(height: 12),
-                _buildInfoRow('应用名称', '波哥记账APP'),
-              ],
-            ),
-          ),
-        ),
       ],
     );
   }
@@ -1350,16 +1331,22 @@ class _UpdateDialogState extends State<_UpdateDialog> {
       actions: _isDownloading
           ? null
           : [
-              TextButton(
-                onPressed: () async {
-                  await UpdateService.skipVersion(widget.updateInfo.version);
-                  if (context.mounted) Navigator.of(context).pop();
-                },
-                child: const Text('稍后再说'),
+              SizedBox(
+                width: double.infinity,
+                child: TextButton(
+                  onPressed: () async {
+                    await UpdateService.skipVersion(widget.updateInfo.version);
+                    if (context.mounted) Navigator.of(context).pop();
+                  },
+                  child: const Text('稍后再说'),
+                ),
               ),
-              FilledButton(
-                onPressed: _download,
-                child: const Text('立即更新'),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: _download,
+                  child: const Text('立即更新'),
+                ),
               ),
             ],
     );

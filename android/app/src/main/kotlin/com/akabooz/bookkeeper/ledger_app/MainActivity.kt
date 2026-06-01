@@ -28,6 +28,7 @@ class MainActivity : FlutterActivity() {
     private val noteEditorChannel = "ledger_app/native_note_editor"
     private val shareImageChannelName = "ledger_app/share_image"
     private val windowChannelName = "ledger_app/window"
+    private val installChannelName = "com.akabooz.bookkeeper.ledger_app/install"
     private var shareImageChannel: MethodChannel? = null
     private var pendingSharedImagePath: String? = null
 
@@ -82,6 +83,22 @@ class MainActivity : FlutterActivity() {
 
                     else -> result.notImplemented()
                 }
+            }
+        }
+        MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            installChannelName,
+        ).setMethodCallHandler { call, result ->
+            when (call.method) {
+                "installApk" -> {
+                    val filePath = call.argument<String>("filePath")
+                    if (filePath != null) {
+                        installApk(filePath, result)
+                    } else {
+                        result.error("INVALID_PATH", "File path is null", null)
+                    }
+                }
+                else -> result.notImplemented()
             }
         }
         consumeIncomingIntent(intent, notifyFlutter = false)
@@ -370,6 +387,36 @@ class MainActivity : FlutterActivity() {
                 setColor(backgroundColor)
             }
             setOnClickListener { onClick() }
+        }
+    }
+
+    private fun installApk(filePath: String, result: MethodChannel.Result) {
+        try {
+            val file = java.io.File(filePath)
+            if (!file.exists()) {
+                result.error("FILE_NOT_FOUND", "APK file not found", null)
+                return
+            }
+
+            val uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                androidx.core.content.FileProvider.getUriForFile(
+                    this,
+                    "${packageName}.fileprovider",
+                    file,
+                )
+            } else {
+                android.net.Uri.fromFile(file)
+            }
+
+            val intent = Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(uri, "application/vnd.android.package-archive")
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            startActivity(intent)
+            result.success(null)
+        } catch (e: Exception) {
+            result.error("INSTALL_FAILED", e.message, null)
         }
     }
 

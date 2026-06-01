@@ -1,11 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:open_file/open_file.dart';
 
 class UpdateInfo {
   final String version;
@@ -20,7 +20,7 @@ class UpdateInfo {
 }
 
 class UpdateService {
-  static const _repoOwner = 'booz-ledger';
+  static const _repoOwner = 'AKABOOZ';
   static const _repoName = 'booz-ledger';
   static const _skippedVersionKey = 'skipped_update_version';
   static const _skippedDateKey = 'skipped_update_date';
@@ -100,6 +100,8 @@ class UpdateService {
     await prefs.setString(_skippedDateKey, today);
   }
 
+  static const _channel = MethodChannel('com.akabooz.bookkeeper.ledger_app/install');
+
   static Future<void> downloadAndInstall(
     String url,
     String version,
@@ -126,9 +128,10 @@ class UpdateService {
 
     await file.writeAsBytes(bytes);
 
-    final result = await OpenFile.open(filePath);
-    if (result.type != ResultType.done) {
-      throw Exception('无法打开安装文件：${result.message}');
+    try {
+      await _channel.invokeMethod('installApk', {'filePath': filePath});
+    } on PlatformException catch (e) {
+      throw Exception('无法启动安装：${e.message}');
     }
   }
 

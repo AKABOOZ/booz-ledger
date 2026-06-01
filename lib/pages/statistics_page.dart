@@ -1063,29 +1063,24 @@ class _StatisticsBlockState extends State<StatisticsBlock> {
               const Divider(height: 1, thickness: 1, color: Color(0xFFE9EFEC)),
               const SizedBox(height: 14),
               ClipRect(
-                child: AnimatedSize(
-                  duration: const Duration(milliseconds: 320),
-                  curve: Curves.easeInOutCubic,
-                  alignment: Alignment.topCenter,
-                  child: Column(
-                    children: visibleEntries.asMap().entries.map((visible) {
-                      final index = visible.key;
-                      final entry = visible.value;
-                      final childStats = widget.childrenByGroup[entry.key];
-                      return StatRankRow(
-                        name: entry.key,
-                        amount: entry.value.total,
-                        total: widget.total,
-                        iconColor: _iconColorFor(entry.key),
-                        chartColor: _chartColorFor(entry.key, index),
-                        icon: _iconFor(entry.key),
-                        children: childStats,
-                        onTap: widget.onCategoryTap == null
-                            ? null
-                            : () => widget.onCategoryTap!(entry.key),
-                      );
-                    }).toList(),
-                  ),
+                child: Column(
+                  children: visibleEntries.asMap().entries.map((visible) {
+                    final index = visible.key;
+                    final entry = visible.value;
+                    final childStats = widget.childrenByGroup[entry.key];
+                    return StatRankRow(
+                      name: entry.key,
+                      amount: entry.value.total,
+                      total: widget.total,
+                      iconColor: _iconColorFor(entry.key),
+                      chartColor: _chartColorFor(entry.key, index),
+                      icon: _iconFor(entry.key),
+                      children: childStats,
+                      onTap: widget.onCategoryTap == null
+                          ? null
+                          : () => widget.onCategoryTap!(entry.key),
+                    );
+                  }).toList(),
                 ),
               ),
               if (canExpand)

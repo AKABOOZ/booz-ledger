@@ -833,16 +833,22 @@ class _UpdateDialogState extends State<_UpdateDialog> {
       actions: _isDownloading
           ? null
           : [
-              TextButton(
-                onPressed: () async {
-                  await UpdateService.skipVersion(widget.updateInfo.version);
-                  if (context.mounted) Navigator.of(context).pop();
-                },
-                child: const Text('稍后再说'),
+              SizedBox(
+                width: double.infinity,
+                child: TextButton(
+                  onPressed: () async {
+                    await UpdateService.skipVersion(widget.updateInfo.version);
+                    if (context.mounted) Navigator.of(context).pop();
+                  },
+                  child: const Text('稍后再说'),
+                ),
               ),
-              FilledButton(
-                onPressed: _download,
-                child: const Text('立即更新'),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: _download,
+                  child: const Text('立即更新'),
+                ),
               ),
             ],
     );
