@@ -960,7 +960,6 @@ class _StatisticsBlockState extends State<StatisticsBlock> {
         oldWidget.type != widget.type ||
         oldWidget.groupByMajor != widget.groupByMajor) {
       _expanded = false;
-      _hasInteracted = false;
     }
   }
 
