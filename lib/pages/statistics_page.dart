@@ -951,6 +951,7 @@ class StatisticsBlock extends StatefulWidget {
 
 class _StatisticsBlockState extends State<StatisticsBlock> {
   bool _expanded = false;
+  bool _hasInteracted = false;
 
   @override
   void didUpdateWidget(covariant StatisticsBlock oldWidget) {
@@ -959,6 +960,7 @@ class _StatisticsBlockState extends State<StatisticsBlock> {
         oldWidget.type != widget.type ||
         oldWidget.groupByMajor != widget.groupByMajor) {
       _expanded = false;
+      _hasInteracted = false;
     }
   }
 
@@ -1063,30 +1065,40 @@ class _StatisticsBlockState extends State<StatisticsBlock> {
               const Divider(height: 1, thickness: 1, color: Color(0xFFE9EFEC)),
               const SizedBox(height: 14),
               ClipRect(
-                child: Column(
-                  children: visibleEntries.asMap().entries.map((visible) {
-                    final index = visible.key;
-                    final entry = visible.value;
-                    final childStats = widget.childrenByGroup[entry.key];
-                    return StatRankRow(
-                      name: entry.key,
-                      amount: entry.value.total,
-                      total: widget.total,
-                      iconColor: _iconColorFor(entry.key),
-                      chartColor: _chartColorFor(entry.key, index),
-                      icon: _iconFor(entry.key),
-                      children: childStats,
-                      onTap: widget.onCategoryTap == null
-                          ? null
-                          : () => widget.onCategoryTap!(entry.key),
-                    );
-                  }).toList(),
+                child: AnimatedSize(
+                  duration: _hasInteracted
+                      ? const Duration(milliseconds: 320)
+                      : Duration.zero,
+                  curve: Curves.easeInOutCubic,
+                  alignment: Alignment.topCenter,
+                  child: Column(
+                    children: visibleEntries.asMap().entries.map((visible) {
+                      final index = visible.key;
+                      final entry = visible.value;
+                      final childStats = widget.childrenByGroup[entry.key];
+                      return StatRankRow(
+                        name: entry.key,
+                        amount: entry.value.total,
+                        total: widget.total,
+                        iconColor: _iconColorFor(entry.key),
+                        chartColor: _chartColorFor(entry.key, index),
+                        icon: _iconFor(entry.key),
+                        children: childStats,
+                        onTap: widget.onCategoryTap == null
+                            ? null
+                            : () => widget.onCategoryTap!(entry.key),
+                      );
+                    }).toList(),
+                  ),
                 ),
               ),
               if (canExpand)
                 StatisticsExpandButton(
                   expanded: _expanded,
-                  onTap: () => setState(() => _expanded = !_expanded),
+                  onTap: () => setState(() {
+                    _hasInteracted = true;
+                    _expanded = !_expanded;
+                  }),
                 ),
             ],
           ],
