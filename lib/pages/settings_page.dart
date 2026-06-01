@@ -7,6 +7,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:ledger_app/models/enums.dart';
 import 'package:ledger_app/services/ai_ledger_service.dart';
 import 'package:ledger_app/services/import_helpers.dart';
+import 'package:ledger_app/services/update_service.dart';
 import 'package:ledger_app/store/ledger_store.dart';
 import 'package:ledger_app/utils/helpers.dart';
 
@@ -26,6 +27,7 @@ class _SettingsPageState extends State<SettingsPage> {
   bool _isSyncingToWebdav = false;
   bool _hasLoadedSettings = false;
   AiProvider _selectedAiProvider = AiProvider.deepSeek;
+  String _appVersion = '1.0.0';
   final _apiKeyController = TextEditingController();
   final _secretKeyController = TextEditingController();
   final _deepSeekApiKeyController = TextEditingController();
@@ -42,6 +44,7 @@ class _SettingsPageState extends State<SettingsPage> {
     if (_hasLoadedSettings) {
       return;
     }
+    _loadAppVersion();
     final store = LedgerScope.of(context);
     _apiKeyController.text = store.baiduApiKey ?? '';
     _secretKeyController.text = store.baiduSecretKey ?? '';
@@ -70,6 +73,34 @@ class _SettingsPageState extends State<SettingsPage> {
     _webdavUsernameController.dispose();
     _webdavPasswordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadAppVersion() async {
+    final version = await UpdateService.getCurrentVersion();
+    if (mounted) {
+      setState(() => _appVersion = version);
+    }
+  }
+
+  Future<void> _checkForUpdate(BuildContext context) async {
+    final updateInfo = await UpdateService.checkForUpdate();
+    if (!mounted) return;
+
+    if (updateInfo == null) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('已是最新版本')),
+        );
+      }
+      return;
+    }
+
+    if (!context.mounted) return;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => _UpdateDialog(updateInfo: updateInfo),
+    );
   }
 
   Widget _buildMainPage() {
@@ -141,6 +172,13 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
         ),
         const SizedBox(height: 16),
+        _buildSettingCard(
+          icon: Icons.system_update,
+          title: '检查更新',
+          description: '当前版本：v$_appVersion',
+          onTap: () => _checkForUpdate(context),
+        ),
+        const SizedBox(height: 16),
         Card(
           child: Padding(
             padding: const EdgeInsets.all(16),
@@ -152,7 +190,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
                 ),
                 const SizedBox(height: 16),
-                _buildInfoRow('版本', '1.0.0'),
+                _buildInfoRow('版本', _appVersion),
                 const SizedBox(height: 12),
                 _buildInfoRow('应用名称', '波哥记账APP'),
               ],
@@ -1261,6 +1299,102 @@ class _SettingsPageState extends State<SettingsPage> {
     } finally {
       if (mounted) {
         setState(() => _isImporting = false);
+      }
+    }
+  }
+}
+
+class _UpdateDialog extends StatefulWidget {
+  const _UpdateDialog({required this.updateInfo});
+  final UpdateInfo updateInfo;
+
+  @override
+  State<_UpdateDialog> createState() => _UpdateDialogState();
+}
+
+class _UpdateDialogState extends State<_UpdateDialog> {
+  bool _isDownloading = false;
+  double _progress = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    final releaseNotes = widget.updateInfo.body ?? '暂无更新说明';
+
+    return AlertDialog(
+      title: Text('发现新版本 v${widget.updateInfo.version}'),
+      content: _isDownloading
+          ? Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('正在下载...'),
+                const SizedBox(height: 16),
+                LinearProgressIndicator(value: _progress),
+                const SizedBox(height: 8),
+                Text('${(_progress * 100).toInt()}%'),
+              ],
+            )
+          : SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    '更新内容：',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(releaseNotes),
+                ],
+              ),
+            ),
+      actions: _isDownloading
+          ? null
+          : [
+              TextButton(
+                onPressed: () async {
+                  await UpdateService.skipVersion(widget.updateInfo.version);
+                  if (context.mounted) Navigator.of(context).pop();
+                },
+                child: const Text('稍后再说'),
+              ),
+              FilledButton(
+                onPressed: _download,
+                child: const Text('立即更新'),
+              ),
+            ],
+    );
+  }
+
+  Future<void> _download() async {
+    final url = widget.updateInfo.downloadUrl;
+    if (url == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('未找到下载链接')),
+        );
+      }
+      return;
+    }
+
+    setState(() {
+      _isDownloading = true;
+      _progress = 0;
+    });
+
+    try {
+      await UpdateService.downloadAndInstall(
+        url,
+        widget.updateInfo.version,
+        (progress) {
+          if (mounted) setState(() => _progress = progress);
+        },
+      );
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isDownloading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('下载失败：$e')),
+        );
       }
     }
   }

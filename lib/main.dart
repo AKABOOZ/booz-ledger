@@ -20,6 +20,7 @@ import 'package:ledger_app/pages/entry_form_page.dart';
 import 'package:ledger_app/pages/search_page.dart';
 import 'package:ledger_app/pages/settings_page.dart';
 import 'package:ledger_app/pages/statistics_page.dart';
+import 'package:ledger_app/services/update_service.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -52,7 +53,24 @@ class _LedgerAppState extends State<LedgerApp> {
         if (_store.isWebdavAutoSyncEnabled) {
           unawaited(_store.syncToWebdav());
         }
+        // 数据加载完成后检查更新
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _checkForUpdate();
+        });
       });
+  }
+
+  Future<void> _checkForUpdate() async {
+    if (!mounted) return;
+    final updateInfo = await UpdateService.checkForUpdate();
+    if (updateInfo == null || !mounted) return;
+
+    if (!context.mounted) return;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => _UpdateDialog(updateInfo: updateInfo),
+    );
   }
 
   @override
@@ -766,6 +784,102 @@ class _LedgerHomeState extends State<LedgerHome> with WidgetsBindingObserver {
     Navigator.of(
       context,
     ).push<void>(MaterialPageRoute(builder: (_) => const SettingsPage()));
+  }
+}
+
+class _UpdateDialog extends StatefulWidget {
+  const _UpdateDialog({required this.updateInfo});
+  final UpdateInfo updateInfo;
+
+  @override
+  State<_UpdateDialog> createState() => _UpdateDialogState();
+}
+
+class _UpdateDialogState extends State<_UpdateDialog> {
+  bool _isDownloading = false;
+  double _progress = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    final releaseNotes = widget.updateInfo.body ?? '暂无更新说明';
+
+    return AlertDialog(
+      title: Text('发现新版本 v${widget.updateInfo.version}'),
+      content: _isDownloading
+          ? Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('正在下载...'),
+                const SizedBox(height: 16),
+                LinearProgressIndicator(value: _progress),
+                const SizedBox(height: 8),
+                Text('${(_progress * 100).toInt()}%'),
+              ],
+            )
+          : SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    '更新内容：',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(releaseNotes),
+                ],
+              ),
+            ),
+      actions: _isDownloading
+          ? null
+          : [
+              TextButton(
+                onPressed: () async {
+                  await UpdateService.skipVersion(widget.updateInfo.version);
+                  if (context.mounted) Navigator.of(context).pop();
+                },
+                child: const Text('稍后再说'),
+              ),
+              FilledButton(
+                onPressed: _download,
+                child: const Text('立即更新'),
+              ),
+            ],
+    );
+  }
+
+  Future<void> _download() async {
+    final url = widget.updateInfo.downloadUrl;
+    if (url == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('未找到下载链接')),
+        );
+      }
+      return;
+    }
+
+    setState(() {
+      _isDownloading = true;
+      _progress = 0;
+    });
+
+    try {
+      await UpdateService.downloadAndInstall(
+        url,
+        widget.updateInfo.version,
+        (progress) {
+          if (mounted) setState(() => _progress = progress);
+        },
+      );
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isDownloading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('下载失败：$e')),
+        );
+      }
+    }
   }
 }
 
