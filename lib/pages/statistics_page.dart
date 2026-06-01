@@ -193,7 +193,6 @@ class _StatisticsPageState extends State<StatisticsPage> {
       _isYearlyView = prefs.getBool(_statsIsYearlyKey) ?? false;
       _year = year;
       _month = DateTime(year, month.clamp(1, 12));
-      _periodRestored = true;
     });
   }
 
@@ -925,7 +924,6 @@ class StatisticsBlock extends StatefulWidget {
     required this.type,
     required this.groupByMajor,
     required this.store,
-    required this.periodRestored,
     this.childrenByGroup = const {},
     this.onCategoryTap,
     super.key,
@@ -941,7 +939,6 @@ class StatisticsBlock extends StatefulWidget {
   final LedgerEntryType type;
   final bool groupByMajor;
   final LedgerStore store;
-  final bool periodRestored;
   final void Function(String category)? onCategoryTap;
 
   @override

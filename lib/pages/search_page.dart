@@ -1851,7 +1851,6 @@ class _FilteredStatisticsPageState extends State<FilteredStatisticsPage> {
                   type: _selectedType,
                   groupByMajor: _groupByMajor,
                   store: store,
-                  periodRestored: true,
                   childrenByGroup: activeChildren,
                 ),
               ],
