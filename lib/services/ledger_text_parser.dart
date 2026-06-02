@@ -468,9 +468,10 @@ class LedgerTextParser {
       return direct;
     }
     if (fallbackText == null || fallbackText.trim().isEmpty) {
-      return null;
+      return DateTime.now();
     }
-    return _extractImageDateTimeFromText(fallbackText);
+    final extracted = _extractImageDateTimeFromText(fallbackText);
+    return extracted ?? DateTime.now();
   }
 
   static String? fallbackAccountIdForSourceApp(
@@ -647,11 +648,11 @@ class LedgerTextParser {
     final compact = normalized.replaceAll(',', '');
     final labelPatterns = [
       RegExp(
-        r'(?:实付|付款金额|消费金额|订单金额|交易金额|收款金额|到账金额|退款金额|合计|总计|应付|实收)\s*[¥￥]?\s*([+-]?\d+(?:\.\d{1,2})?)',
+        r'(?:实付|付款金额|消费金额|订单金额|交易金额|收款金额|到账金额|退款金额|预估到手|合计|总计|应付|实收)\s*[¥￥]?\s*([+-]?\d+(?:\.\d{1,2})?)',
         caseSensitive: false,
       ),
       RegExp(
-        r'(?:实付|付款金额|消费金额|订单金额|交易金额|收款金额|到账金额|退款金额|合计|总计|应付|实收)[^\d¥￥]{0,8}[¥￥]\s*([+-]?\d+(?:\.\d{1,2})?)',
+        r'(?:实付|付款金额|消费金额|订单金额|交易金额|收款金额|到账金额|退款金额|预估到手|合计|总计|应付|实收)[^\d¥￥]{0,8}[¥￥]\s*([+-]?\d+(?:\.\d{1,2})?)',
         caseSensitive: false,
       ),
     ];
@@ -710,6 +711,12 @@ class LedgerTextParser {
       '已退款',
       '退款到账',
       '退回原账户',
+      '交易成功',
+      '已售出',
+      '宝贝已售出',
+      '卖出',
+      '预估到手',
+      '已卖出',
       '转入',
       '收款',
       '到账',
