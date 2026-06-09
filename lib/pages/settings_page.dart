@@ -88,9 +88,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
     if (updateInfo == null) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('已是最新版本')),
-        );
+        showSnack(context, '已是最新版本');
       }
       return;
     }
@@ -1356,9 +1354,7 @@ class _UpdateDialogState extends State<_UpdateDialog> {
     final url = widget.updateInfo.downloadUrl;
     if (url == null) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('未找到下载链接')),
-        );
+        showSnack(context, '未找到下载链接');
       }
       return;
     }
@@ -1379,9 +1375,7 @@ class _UpdateDialogState extends State<_UpdateDialog> {
     } catch (e) {
       if (mounted) {
         setState(() => _isDownloading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('下载失败：$e')),
-        );
+        showSnack(context, '下载失败：$e');
       }
     }
   }
