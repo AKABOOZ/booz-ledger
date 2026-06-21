@@ -7,6 +7,7 @@ class CustomKeyboard extends StatelessWidget {
     required this.currentType,
     required this.onTypeChanged,
     required this.isCalculated,
+    required this.hasExpression,
     super.key,
   });
 
@@ -14,8 +15,8 @@ class CustomKeyboard extends StatelessWidget {
   final LedgerEntryType currentType;
   final void Function(LedgerEntryType type) onTypeChanged;
   final bool isCalculated;
+  final bool hasExpression;
 
-  // Figma colors
   static const _teal = Color(0xFF00696D);
   static const _sidebarBg = Color(0xFFF8F8F8);
   static const _selectedBg = Color(0xFFE2F3EB);
@@ -24,70 +25,55 @@ class CustomKeyboard extends StatelessWidget {
   static const _deleteColor = Color(0xFF333333);
   static const _dividerColor = Color(0xFFD9D9D9);
 
+  bool get _showEquals => hasExpression && !isCalculated;
+
   @override
   Widget build(BuildContext context) {
+    // 按钮宽度与运算符列一致
+    const btnWidth = 60.0;
+
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: const Color(0x14000000),
+            color: Color(0x14000000),
             blurRadius: 44,
-            offset: const Offset(0, -2),
+            offset: Offset(0, -2),
           ),
         ],
       ),
       child: SafeArea(
         top: false,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildTopBar(),
-            _buildBody(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTopBar() {
-    return Container(
-      height: 44,
-      alignment: Alignment.centerRight,
-      padding: const EdgeInsets.only(right: 16),
-      child: GestureDetector(
-        onTap: () => onKeyPressed('collapse'),
-        child: const Icon(
-          Icons.keyboard_arrow_down,
-          size: 22,
-          color: Color(0xFF999999),
-        ),
+        child: _buildBody(),
       ),
     );
   }
 
   Widget _buildBody() {
-    return Row(
-      children: [
-        _buildSidebar(),
-        Expanded(child: _buildNumberPad()),
-        _buildOperatorColumn(),
-      ],
+    return SizedBox(
+      height: 280,
+      child: Row(
+        children: [
+          _buildSidebar(),
+          Expanded(child: _buildNumberPad()),
+          _buildOperatorColumn(),
+        ],
+      ),
     );
   }
 
   Widget _buildSidebar() {
     return Container(
-      width: 59,
+      width: 55,
       color: _sidebarBg,
       child: Column(
-        mainAxisSize: MainAxisSize.min,
         children: [
-          _buildTypeButton('支出', LedgerEntryType.expense),
+          _buildTypeButton('支\n出', LedgerEntryType.expense),
           Container(height: 1, color: _dividerColor),
-          _buildTypeButton('收入', LedgerEntryType.income),
+          _buildTypeButton('收\n入', LedgerEntryType.income),
           Container(height: 1, color: _dividerColor),
-          _buildTypeButton('转账', LedgerEntryType.transfer),
+          _buildTypeButton('转\n账', LedgerEntryType.transfer),
         ],
       ),
     );
@@ -95,19 +81,24 @@ class CustomKeyboard extends StatelessWidget {
 
   Widget _buildTypeButton(String label, LedgerEntryType type) {
     final isSelected = currentType == type;
-    return GestureDetector(
-      onTap: () => onTypeChanged(type),
-      child: Container(
-        height: 87,
-        alignment: Alignment.center,
-        color: isSelected ? _selectedBg : Colors.transparent,
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
-            color: isSelected ? _teal : _unselectedText,
-            decoration: TextDecoration.none,
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => onTypeChanged(type),
+        behavior: HitTestBehavior.opaque,
+        child: Container(
+          color: isSelected ? _selectedBg : Colors.transparent,
+          child: Center(
+            child: Text(
+              label,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
+                color: isSelected ? _teal : _unselectedText,
+                decoration: TextDecoration.none,
+                height: 1.1,
+              ),
+            ),
           ),
         ),
       ),
@@ -116,122 +107,217 @@ class CustomKeyboard extends StatelessWidget {
 
   Widget _buildNumberPad() {
     return Column(
-      mainAxisSize: MainAxisSize.min,
       children: [
-        _buildNumberRow(['7', '8', '9']),
-        _buildNumberRow(['4', '5', '6']),
-        _buildNumberRow(['1', '2', '3']),
-        _buildBottomRow(),
+        Expanded(child: _buildNumberRow(['7', '8', '9'])),
+        Container(height: 1, color: _dividerColor),
+        Expanded(child: _buildNumberRow(['4', '5', '6'])),
+        Container(height: 1, color: _dividerColor),
+        Expanded(child: _buildNumberRow(['1', '2', '3'])),
+        Container(height: 1, color: _dividerColor),
+        Expanded(child: _buildBottomRow()),
       ],
     );
   }
 
   Widget _buildNumberRow(List<String> keys) {
     return Row(
-      children: keys.map((key) => _buildKey(key, 65)).toList(),
+      children: [
+        for (var i = 0; i < keys.length; i++) ...[
+          Expanded(
+            child: GestureDetector(
+              onTap: () => onKeyPressed(keys[i]),
+              behavior: HitTestBehavior.opaque,
+              child: Container(
+                alignment: Alignment.center,
+                child: Text(
+                  keys[i],
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                    color: _keyText,
+                    decoration: TextDecoration.none,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          if (i < keys.length - 1)
+            Container(width: 1, color: _dividerColor),
+        ],
+      ],
     );
   }
 
   Widget _buildBottomRow() {
     return Row(
       children: [
-        _buildKey('.', 72),
-        _buildKey('0', 72),
-        _buildDeleteKey(72),
-      ],
-    );
-  }
-
-  Widget _buildKey(String key, double height) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: () => onKeyPressed(key),
-        child: Container(
-          height: height,
-          alignment: Alignment.center,
-          color: Colors.white,
-          child: Text(
-            key,
-            style: const TextStyle(
-              fontSize: 25,
-              fontWeight: FontWeight.w400,
-              color: _keyText,
-              decoration: TextDecoration.none,
+        Expanded(
+          child: GestureDetector(
+            onTap: () => onKeyPressed('.'),
+            behavior: HitTestBehavior.opaque,
+            child: Container(
+              alignment: Alignment.center,
+              child: const Text(
+                '.',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  color: _keyText,
+                  decoration: TextDecoration.none,
+                ),
+              ),
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildDeleteKey(double height) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: () => onKeyPressed('⌫'),
-        child: Container(
-          height: height,
-          alignment: Alignment.center,
-          color: Colors.white,
-          child: const Icon(
-            Icons.keyboard_backspace_outlined,
-            size: 28,
-            color: _deleteColor,
+        Container(width: 1, color: _dividerColor),
+        Expanded(
+          child: GestureDetector(
+            onTap: () => onKeyPressed('0'),
+            behavior: HitTestBehavior.opaque,
+            child: Container(
+              alignment: Alignment.center,
+              child: const Text(
+                '0',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  color: _keyText,
+                  decoration: TextDecoration.none,
+                ),
+              ),
+            ),
           ),
         ),
-      ),
+        Container(width: 1, color: _dividerColor),
+        Expanded(
+          child: GestureDetector(
+            onTap: () => onKeyPressed('⌫'),
+            behavior: HitTestBehavior.opaque,
+            child: Container(
+              alignment: Alignment.center,
+              child: Image.asset(
+                'assets/icons/delete_icon.png',
+                width: 22,
+                height: 22,
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
   Widget _buildOperatorColumn() {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _buildOperatorButton('-', 65),
-        _buildOperatorButton('+', 65),
-        _buildEqualsButton(65 + 72),
-      ],
-    );
-  }
-
-  Widget _buildOperatorButton(String op, double height) {
-    return GestureDetector(
-      onTap: () => onKeyPressed(op),
-      child: Container(
-        height: height,
-        width: 72,
-        alignment: Alignment.center,
-        color: Colors.white,
-        child: Text(
-          op,
-          style: const TextStyle(
-            fontSize: 29,
-            fontWeight: FontWeight.w400,
-            color: _keyText,
-            decoration: TextDecoration.none,
+    return Container(
+      width: 60,
+      height: double.infinity,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(width: 1, color: _dividerColor),
+          Expanded(
+            child: Column(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => onKeyPressed('-'),
+                    behavior: HitTestBehavior.opaque,
+                    child: Container(
+                      alignment: Alignment.center,
+                      child: const Text(
+                        '-',
+                        style: TextStyle(
+                          fontSize: 26,
+                          fontWeight: FontWeight.w500,
+                          color: _keyText,
+                          decoration: TextDecoration.none,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Container(height: 1, color: _dividerColor),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => onKeyPressed('+'),
+                    behavior: HitTestBehavior.opaque,
+                    child: Container(
+                      alignment: Alignment.center,
+                      child: const Text(
+                        '+',
+                        style: TextStyle(
+                          fontSize: 26,
+                          fontWeight: FontWeight.w500,
+                          color: _keyText,
+                          decoration: TextDecoration.none,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Container(height: 1, color: _dividerColor),
+                Expanded(
+                  flex: 2,
+                  child: GestureDetector(
+                    onTap: () => onKeyPressed(_showEquals ? '=' : 'confirm'),
+                    behavior: HitTestBehavior.opaque,
+                    child: Container(
+                      alignment: Alignment.center,
+                      decoration: const BoxDecoration(
+                        color: _teal,
+                        borderRadius: BorderRadius.only(
+                          bottomRight: Radius.circular(8),
+                        ),
+                      ),
+                      child: Text(
+                        _showEquals ? '=' : '确定',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                          decoration: TextDecoration.none,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
+}
 
-  Widget _buildEqualsButton(double height) {
-    return GestureDetector(
-      onTap: () => onKeyPressed(isCalculated ? 'confirm' : '='),
-      child: Container(
-        height: height,
-        width: 72,
-        alignment: Alignment.center,
-        color: _teal,
-        child: Text(
-          isCalculated ? '确定' : '=',
-          style: const TextStyle(
-            fontSize: 29,
-            fontWeight: FontWeight.w400,
-            color: Colors.white,
-            decoration: TextDecoration.none,
-          ),
-        ),
-      ),
-    );
+class _DeleteIconPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = const Color(0xFF333333)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0
+      ..strokeCap = StrokeCap.round;
+
+    final centerX = size.width / 2;
+    final centerY = size.height / 2;
+    const hw = 10.0;
+    const hh = 7.0;
+
+    // Left part of the arrow (backspace triangle)
+    final path = Path()
+      ..moveTo(centerX + hw * 0.3, centerY - hh)
+      ..lineTo(centerX - hw * 0.3, centerY)
+      ..lineTo(centerX + hw * 0.3, centerY + hh);
+    canvas.drawPath(path, paint);
+
+    // Right lines
+    paint..strokeWidth = 1.8;
+    canvas.drawLine(Offset(centerX - hw * 0.15, centerY - hh * 0.5), Offset(centerX + hw * 0.6, centerY + hh * 0.5), paint);
+    canvas.drawLine(Offset(centerX + hw * 0.6, centerY - hh * 0.5), Offset(centerX - hw * 0.15, centerY + hh * 0.5), paint);
   }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

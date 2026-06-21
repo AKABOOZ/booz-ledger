@@ -618,6 +618,7 @@ class _EntryFormPageState extends State<EntryFormPage> {
   }
 
   Future<void> _awaitSheetInteraction() {
+    setState(() => _isCustomKeyboardVisible = false);
     return _awaitDeferredInteraction(
       requiredSettledFrames: 3,
       extraDelay: const Duration(milliseconds: 56),
@@ -1414,11 +1415,53 @@ class _EntryFormPageState extends State<EntryFormPage> {
           left: 0,
           right: 0,
           bottom: _isCustomKeyboardVisible ? 0 : -400,
-          child: CustomKeyboard(
-            onKeyPressed: _handleCustomKeyPressed,
-            currentType: _type,
-            onTypeChanged: _handleTypeChanged,
-            isCalculated: _isCalculated,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // 收起按钮 - 紧贴屏幕右边缘
+              Align(
+                alignment: Alignment.centerRight,
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _isCustomKeyboardVisible = false;
+                    });
+                  },
+                  child: Container(
+                    width: 60,
+                    height: 32,
+                    alignment: Alignment.center,
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(10),
+                        topRight: Radius.circular(10),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Color(0x08000000),
+                          blurRadius: 6,
+                          offset: Offset(0, -1),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.keyboard_arrow_down,
+                      size: 20,
+                      color: Color(0xFF999999),
+                    ),
+                  ),
+                ),
+              ),
+              // 键盘主体
+              CustomKeyboard(
+                onKeyPressed: _handleCustomKeyPressed,
+                currentType: _type,
+                onTypeChanged: _handleTypeChanged,
+                isCalculated: _isCalculated,
+                hasExpression: _expression.contains('+') || _expression.contains('-'),
+              ),
+            ],
           ),
         ),
         _buildNoteEditorSheet(),
@@ -2096,6 +2139,10 @@ class _AmountInputState extends State<AmountInput> {
                   borderRadius: BorderRadius.circular(28),
                   borderSide: const BorderSide(color: Color(0x33167C80), width: 1),
                 ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 24,
+                ),
               ),
               style: Theme.of(context).textTheme.displaySmall?.copyWith(
                 fontWeight: FontWeight.w800,
@@ -2120,8 +2167,8 @@ class _AmountInputState extends State<AmountInput> {
             ),
             if (widget.expression.isNotEmpty && !widget.isCalculated && (widget.expression.contains('+') || widget.expression.contains('-')))
               Positioned(
-                left: 48,
-                bottom: 8,
+                left: 56,
+                bottom: 14,
                 child: Text(
                   widget.expression,
                   style: const TextStyle(
