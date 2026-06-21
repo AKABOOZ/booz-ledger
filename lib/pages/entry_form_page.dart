@@ -17,6 +17,7 @@ import 'package:ledger_app/store/ledger_store.dart';
 import 'package:ledger_app/utils/helpers.dart';
 import 'package:ledger_app/widgets/common_widgets.dart';
 import 'package:ledger_app/widgets/voice_widgets.dart';
+import 'package:ledger_app/widgets/custom_keyboard.dart';
 
 class ExpenseCategorySelector extends StatelessWidget {
   const ExpenseCategorySelector({
@@ -197,6 +198,10 @@ class _EntryFormPageState extends State<EntryFormPage> {
   bool _isRecorderInitialized = false;
   bool _isNoteEditorVisible = false;
   bool _hasOpenedNoteEditorOnce = false;
+  bool _isCustomKeyboardVisible = true;
+  bool _isCalculated = false;
+  String _expression = '';
+  String _expressionResult = '';
   Future<bool>? _pendingKeyboardDismissRequest;
   String _processingMessage = '正在识别并回填记账信息...';
   Offset? _pendingEntryVoiceFinishPosition;
@@ -1187,6 +1192,13 @@ class _EntryFormPageState extends State<EntryFormPage> {
                     AmountInput(
                       controller: _amountController,
                       focusNode: _amountFocusNode,
+                      expression: _expression,
+                      isCalculated: _isCalculated,
+                      onTap: () {
+                        setState(() {
+                          _isCustomKeyboardVisible = true;
+                        });
+                      },
                     ),
                     const SizedBox(height: 14),
                     if (_type == LedgerEntryType.expense)
@@ -1396,6 +1408,19 @@ class _EntryFormPageState extends State<EntryFormPage> {
               isVisible: _isVoiceOverlayOpaque,
             ),
           ),
+        AnimatedPositioned(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOutCubic,
+          left: 0,
+          right: 0,
+          bottom: _isCustomKeyboardVisible ? 0 : -400,
+          child: CustomKeyboard(
+            onKeyPressed: _handleCustomKeyPressed,
+            currentType: _type,
+            onTypeChanged: _handleTypeChanged,
+            isCalculated: _isCalculated,
+          ),
+        ),
         _buildNoteEditorSheet(),
         if (_isVoiceOverlayVisible && voiceButtonRect != null)
           Positioned(
@@ -1661,6 +1686,135 @@ class _EntryFormPageState extends State<EntryFormPage> {
       }());
     });
   }
+
+  void _handleCustomKeyPressed(String key) {
+    setState(() {
+      if (key == 'collapse') {
+        _isCustomKeyboardVisible = false;
+        return;
+      }
+
+      if (key == 'confirm') {
+        _isCustomKeyboardVisible = false;
+        return;
+      }
+
+      if (key == '=') {
+        _calculateExpression();
+        _isCalculated = true;
+        return;
+      }
+
+      if (key == '⌫') {
+        if (_expression.isNotEmpty) {
+          _expression = _expression.substring(0, _expression.length - 1);
+          _updateAmountFromExpression();
+        }
+        return;
+      }
+
+      if (key == '+' || key == '-') {
+        if (_expression.isNotEmpty && !_expression.endsWith('+') && !_expression.endsWith('-')) {
+          _expression += key;
+          _isCalculated = false;
+        }
+        return;
+      }
+
+      if (key == '.') {
+        if (_expression.isEmpty || _expression.endsWith('+') || _expression.endsWith('-')) {
+          _expression += '0.';
+        } else if (!_expression.contains('.') || _expression.split(RegExp(r'[+-]')).last.isEmpty) {
+          _expression += '.';
+        }
+        return;
+      }
+
+      // 数字键
+      if (RegExp(r'^\d$').hasMatch(key)) {
+        if (_isCalculated) {
+          _expression = key;
+          _isCalculated = false;
+        } else {
+          _expression += key;
+        }
+        _updateAmountFromExpression();
+      }
+    });
+  }
+
+  void _updateAmountFromExpression() {
+    if (_expression.isEmpty) {
+      _amountController.text = '';
+      _expressionResult = '';
+      return;
+    }
+
+    if (_expression.contains('+') || _expression.endsWith('-')) {
+      // 有运算符时，计算结果
+      _calculateExpression();
+    } else {
+      // 纯数字
+      final amount = double.tryParse(_expression);
+      if (amount != null) {
+        _amountController.text = amount.toStringAsFixed(2);
+        _expressionResult = _expression;
+      }
+    }
+  }
+
+  void _calculateExpression() {
+    if (_expression.isEmpty) return;
+
+    try {
+      final result = _evaluateExpression(_expression);
+      if (result != null) {
+        _amountController.text = result.toStringAsFixed(2);
+        _expressionResult = _expression;
+      }
+    } catch (e) {
+      // 表达式无效
+    }
+  }
+
+  double? _evaluateExpression(String expression) {
+    // 简单解析：支持 a+b 和 a-b
+    final parts = expression.split(RegExp(r'([+-])'));
+    if (parts.isEmpty) return null;
+
+    double result = 0;
+    String operator = '+';
+
+    for (final part in parts) {
+      if (part.isEmpty) continue;
+
+      final value = double.tryParse(part);
+      if (value == null) return null;
+
+      switch (operator) {
+        case '+':
+          result += value;
+          break;
+        case '-':
+          result -= value;
+          break;
+      }
+
+      // 找下一个运算符
+      final opIndex = expression.indexOf(part) + part.length;
+      if (opIndex < expression.length) {
+        operator = expression[opIndex];
+      }
+    }
+
+    return result;
+  }
+
+  void _handleTypeChanged(LedgerEntryType type) {
+    setState(() {
+      _type = type;
+    });
+  }
 }
 
 class SheetFrame extends StatelessWidget {
@@ -1855,10 +2009,20 @@ class _EntryTypeSwitchState extends State<EntryTypeSwitch> {
 }
 
 class AmountInput extends StatefulWidget {
-  const AmountInput({required this.controller, this.focusNode, super.key});
+  const AmountInput({
+    required this.controller,
+    this.focusNode,
+    this.expression = '',
+    this.isCalculated = false,
+    this.onTap,
+    super.key,
+  });
 
   final TextEditingController controller;
   final FocusNode? focusNode;
+  final String expression;
+  final bool isCalculated;
+  final VoidCallback? onTap;
 
   @override
   State<AmountInput> createState() => _AmountInputState();
@@ -1900,46 +2064,75 @@ class _AmountInputState extends State<AmountInput> {
 
   @override
   Widget build(BuildContext context) {
-    return TextFormField(
-      controller: widget.controller,
-      focusNode: widget.focusNode,
-      decoration: InputDecoration(
-        labelText: '金额',
-        prefixText: '¥ ',
-        filled: true,
-        fillColor: Colors.white,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(28),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(28),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(28),
-          borderSide: const BorderSide(color: Color(0x33167C80), width: 1),
-        ),
-      ),
-      style: Theme.of(context).textTheme.displaySmall?.copyWith(
-        fontWeight: FontWeight.w800,
-        letterSpacing: 0,
-      ),
-      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-      onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
-      onFieldSubmitted: (value) {
-        _formatOnSubmit();
-      },
-      onEditingComplete: () {
-        _formatOnSubmit();
-      },
-      validator: (value) {
-        final cents = parseMoney(value ?? '');
-        if (cents == null || cents <= 0) {
-          return '请输入大于 0 的金额';
+    return GestureDetector(
+      onTap: () {
+        if (widget.onTap != null) {
+          widget.onTap!();
         }
-        return null;
+        widget.focusNode?.requestFocus();
       },
+      child: AbsorbPointer(
+        absorbing: true,
+        child: Stack(
+          children: [
+            TextFormField(
+              controller: widget.controller,
+              focusNode: widget.focusNode,
+              decoration: InputDecoration(
+                labelText: '金额',
+                floatingLabelBehavior: FloatingLabelBehavior.always,
+                prefixText: '¥ ',
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(28),
+                  borderSide: BorderSide.none,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(28),
+                  borderSide: BorderSide.none,
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(28),
+                  borderSide: const BorderSide(color: Color(0x33167C80), width: 1),
+                ),
+              ),
+              style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                fontWeight: FontWeight.w800,
+                letterSpacing: 0,
+              ),
+              keyboardType: TextInputType.none,
+              readOnly: true,
+              onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+              onFieldSubmitted: (value) {
+                _formatOnSubmit();
+              },
+              onEditingComplete: () {
+                _formatOnSubmit();
+              },
+              validator: (value) {
+                final cents = parseMoney(value ?? '');
+                if (cents == null || cents <= 0) {
+                  return '请输入大于 0 的金额';
+                }
+                return null;
+              },
+            ),
+            if (widget.expression.isNotEmpty && !widget.isCalculated && (widget.expression.contains('+') || widget.expression.contains('-')))
+              Positioned(
+                left: 48,
+                bottom: 8,
+                child: Text(
+                  widget.expression,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: Color(0xFF7A807E),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 }

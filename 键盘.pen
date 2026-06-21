@@ -1,0 +1,528 @@
+{
+  "version": "2.11",
+  "children": [
+    {
+      "type": "frame",
+      "id": "bi8Au",
+      "x": 0,
+      "y": 0,
+      "name": "Frame",
+      "clip": true,
+      "width": 800,
+      "height": 600,
+      "fill": "#FFFFFF",
+      "layout": "none",
+      "children": [
+        {
+          "type": "frame",
+          "id": "Xz8qA",
+          "x": 0,
+          "y": 0,
+          "name": "Keyboard",
+          "clip": true,
+          "width": 800,
+          "height": 600,
+          "fill": "#FFFFFF",
+          "children": [
+            {
+              "type": "frame",
+              "id": "VWjG8",
+              "name": "Sidebar",
+              "width": 120,
+              "height": "fill_container",
+              "fill": "#F8F8F8",
+              "layout": "vertical",
+              "children": [
+                {
+                  "type": "rectangle",
+                  "id": "fMQ8q",
+                  "name": "Divider1",
+                  "fill": "#D9D9D9",
+                  "width": "fill_container",
+                  "height": 1
+                },
+                {
+                  "type": "frame",
+                  "id": "Tk47B",
+                  "name": "ExpenseButton",
+                  "width": "fill_container",
+                  "height": 150,
+                  "fill": "#E2F3EB",
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "qnN5C",
+                      "name": "ExpenseLabel",
+                      "fill": "#00696D",
+                      "content": "支出",
+                      "fontFamily": "Inter",
+                      "fontSize": 20,
+                      "fontWeight": "bold"
+                    }
+                  ]
+                },
+                {
+                  "type": "rectangle",
+                  "id": "F5mKM0",
+                  "name": "Divider2",
+                  "fill": "#D9D9D9",
+                  "width": "fill_container",
+                  "height": 1
+                },
+                {
+                  "type": "frame",
+                  "id": "Qe93H",
+                  "name": "IncomeButton",
+                  "width": "fill_container",
+                  "height": 150,
+                  "fill": "#FFFFFF",
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "KKKT7",
+                      "name": "IncomeLabel",
+                      "fill": "#666666",
+                      "content": "收入",
+                      "fontFamily": "Inter",
+                      "fontSize": 20,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "rectangle",
+                  "id": "zLdl4",
+                  "name": "Divider3",
+                  "fill": "#D9D9D9",
+                  "width": "fill_container",
+                  "height": 1
+                },
+                {
+                  "type": "frame",
+                  "id": "Wjjm2",
+                  "name": "TransferButton",
+                  "width": "fill_container",
+                  "height": 150,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "EZf7k",
+                      "name": "TransferLabel",
+                      "fill": "#666666",
+                      "content": "转账",
+                      "fontFamily": "Inter",
+                      "fontSize": 20,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "lWvR9",
+              "name": "NumberPad",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "Y6smP",
+                  "name": "Row1",
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "x6oxD",
+                      "name": "Key7",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "w50gYm",
+                          "name": "Num7",
+                          "fill": "#000000",
+                          "content": "7",
+                          "fontFamily": "Inter",
+                          "fontSize": 32,
+                          "fontWeight": "bold"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "mm6Br",
+                      "name": "Key8",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "zIBdb",
+                          "name": "Num8",
+                          "fill": "#000000",
+                          "content": "8",
+                          "fontFamily": "Inter",
+                          "fontSize": 32,
+                          "fontWeight": "bold"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "aRBLW",
+                      "name": "Key9",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "WygSO",
+                          "name": "Num9",
+                          "fill": "#000000",
+                          "content": "9",
+                          "fontFamily": "Inter",
+                          "fontSize": 32,
+                          "fontWeight": "bold"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "sGq1o",
+                  "name": "Row2",
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "NtFQp",
+                      "name": "Key4",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "bj8h6",
+                          "name": "Num4",
+                          "fill": "#000000",
+                          "content": "4",
+                          "fontFamily": "Inter",
+                          "fontSize": 32,
+                          "fontWeight": "bold"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "qiHOq",
+                      "name": "Key5",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "XB6Ws",
+                          "name": "Num5",
+                          "fill": "#000000",
+                          "content": "5",
+                          "fontFamily": "Inter",
+                          "fontSize": 32,
+                          "fontWeight": "bold"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "FdBFb",
+                      "name": "Key6",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "hEPh5",
+                          "name": "Num6",
+                          "fill": "#000000",
+                          "content": "6",
+                          "fontFamily": "Inter",
+                          "fontSize": 32,
+                          "fontWeight": "bold"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "n54Le",
+                  "name": "Row3",
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "uYqqM",
+                      "name": "Key1",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "dnIcC",
+                          "name": "Num1",
+                          "fill": "#000000",
+                          "content": "1",
+                          "fontFamily": "Inter",
+                          "fontSize": 32,
+                          "fontWeight": "bold"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "yOcjA",
+                      "name": "Key2",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "pICFK",
+                          "name": "Num2",
+                          "fill": "#000000",
+                          "content": "2",
+                          "fontFamily": "Inter",
+                          "fontSize": 32,
+                          "fontWeight": "bold"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "cYYuu",
+                      "name": "Key3",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "r8mwbJ",
+                          "name": "Num3",
+                          "fill": "#000000",
+                          "content": "3",
+                          "fontFamily": "Inter",
+                          "fontSize": 32,
+                          "fontWeight": "bold"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "FS8km",
+                  "name": "Row4",
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "YKKyS",
+                      "name": "KeyDot",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "IWvIc",
+                          "name": "Dot",
+                          "fill": "#000000",
+                          "content": ".",
+                          "fontFamily": "Inter",
+                          "fontSize": 32,
+                          "fontWeight": "bold"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "wzMGM",
+                      "name": "KeyZero",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "TOEd8",
+                          "name": "Zero",
+                          "fill": "#000000",
+                          "content": "0",
+                          "fontFamily": "Inter",
+                          "fontSize": 32,
+                          "fontWeight": "bold"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "L6matc",
+                      "name": "KeyDelete",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Ad8cA",
+                          "name": "Delete",
+                          "fill": "#333333",
+                          "content": "⌫",
+                          "fontFamily": "Inter",
+                          "fontSize": 28,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "mSXLg",
+              "name": "OperatorColumn",
+              "width": 120,
+              "height": "fill_container",
+              "layout": "vertical",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "HIDLl",
+                  "name": "MinusButton",
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "fVPGc",
+                      "name": "Minus",
+                      "fill": "#000000",
+                      "content": "-",
+                      "fontFamily": "Inter",
+                      "fontSize": 36,
+                      "fontWeight": "bold"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "gln7K",
+                  "name": "PlusButton",
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "a4P0Cp",
+                      "name": "Plus",
+                      "fill": "#000000",
+                      "content": "+",
+                      "fontFamily": "Inter",
+                      "fontSize": 36,
+                      "fontWeight": "bold"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "AhvoA",
+                  "name": "EqualsButton",
+                  "width": 120,
+                  "height": "fill_container",
+                  "fill": "#00696D",
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "YKVDb",
+                      "name": "Equals",
+                      "fill": "#FFFFFF",
+                      "content": "=",
+                      "fontFamily": "Inter",
+                      "fontSize": 36,
+                      "fontWeight": "bold"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "pmaQF",
+              "layoutPosition": "absolute",
+              "x": 680,
+              "y": 0,
+              "name": "CollapseButton",
+              "width": 120,
+              "height": 50,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "oGmJY",
+                  "name": "CollapseArrow",
+                  "fill": "#999999",
+                  "content": "▼",
+                  "fontFamily": "Inter",
+                  "fontSize": 18,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
