@@ -33,16 +33,6 @@ class CustomKeyboard extends StatelessWidget {
     const btnWidth = 60.0;
 
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Color(0x14000000),
-            blurRadius: 44,
-            offset: Offset(0, -2),
-          ),
-        ],
-      ),
       child: SafeArea(
         top: false,
         child: _buildBody(),

@@ -1415,53 +1415,15 @@ class _EntryFormPageState extends State<EntryFormPage> {
           left: 0,
           right: 0,
           bottom: _isCustomKeyboardVisible ? 0 : -400,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // 收起按钮 - 紧贴屏幕右边缘
-              Align(
-                alignment: Alignment.centerRight,
-                child: GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _isCustomKeyboardVisible = false;
-                    });
-                  },
-                  child: Container(
-                    width: 60,
-                    height: 32,
-                    alignment: Alignment.center,
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(10),
-                        topRight: Radius.circular(10),
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Color(0x08000000),
-                          blurRadius: 6,
-                          offset: Offset(0, -1),
-                        ),
-                      ],
-                    ),
-                    child: const Icon(
-                      Icons.keyboard_arrow_down,
-                      size: 20,
-                      color: Color(0xFF999999),
-                    ),
-                  ),
-                ),
-              ),
-              // 键盘主体
-              CustomKeyboard(
-                onKeyPressed: _handleCustomKeyPressed,
-                currentType: _type,
-                onTypeChanged: _handleTypeChanged,
-                isCalculated: _isCalculated,
-                hasExpression: _expression.contains('+') || _expression.contains('-'),
-              ),
-            ],
+          child: _KeyboardWithButton(
+            onCollapse: () => setState(() => _isCustomKeyboardVisible = false),
+            child: CustomKeyboard(
+              onKeyPressed: _handleCustomKeyPressed,
+              currentType: _type,
+              onTypeChanged: _handleTypeChanged,
+              isCalculated: _isCalculated,
+              hasExpression: _expression.contains('+') || _expression.contains('-'),
+            ),
           ),
         ),
         _buildNoteEditorSheet(),
@@ -3762,5 +3724,102 @@ class _AccountFormPageState extends State<AccountFormPage> {
     Navigator.of(context).pop();
     widget.onSaved();
   }
+}
+
+/// 键盘 + 收起按钮组合，右上角有凸起
+class _KeyboardWithButton extends StatelessWidget {
+  const _KeyboardWithButton({
+    required this.onCollapse,
+    required this.child,
+  });
+
+  final VoidCallback onCollapse;
+  final Widget child;
+
+  static const _protrusionHeight = 24.0;
+  static const _btnWidth = 59.0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        boxShadow: [
+          BoxShadow(
+            color: Color(0x14000000),
+            blurRadius: 44,
+            offset: Offset(0, -2),
+          ),
+        ],
+      ),
+      child: ClipPath(
+        clipper: _KeyboardShapeClipper(),
+        child: Container(
+          color: Colors.white,
+          child: SizedBox(
+            width: double.infinity,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Padding(
+                  padding: EdgeInsets.only(top: _protrusionHeight),
+                  child: child,
+                ),
+                // 收起箭头 - 在右上角凸起位置
+                Positioned(
+                  right: 0,
+                  top: 4,
+                  child: SizedBox(
+                    width: _btnWidth,
+                    height: _protrusionHeight,
+                    child: GestureDetector(
+                      onTap: onCollapse,
+                      behavior: HitTestBehavior.opaque,
+                      child: const Icon(
+                        Icons.keyboard_arrow_down,
+                        size: 20,
+                        color: Color(0xFF999999),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _KeyboardShapeClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    final path = Path();
+    final pw = size.width;
+    final ph = _KeyboardWithButton._protrusionHeight;
+    final btnW = _KeyboardWithButton._btnWidth;
+    const r = 8.0;
+
+    // 主体顶部从左→右，到达凸起左下角
+    path.moveTo(0, ph);
+    path.lineTo(pw - btnW, ph);
+    // 凸起左下角（直角）→ 向上
+    path.lineTo(pw - btnW, r);
+    // 凸起左上圆角
+    path.quadraticBezierTo(pw - btnW, 0, pw - btnW + r, 0);
+    // 凸起顶部
+    path.lineTo(pw - r, 0);
+    // 凸起右上圆角
+    path.quadraticBezierTo(pw, 0, pw, r);
+    // 凸起右下角（直角）→ 向下
+    path.lineTo(pw, size.height);
+    // 底部
+    path.lineTo(0, size.height);
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
 }
 
