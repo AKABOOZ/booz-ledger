@@ -198,7 +198,7 @@ class _EntryFormPageState extends State<EntryFormPage> {
   bool _isRecorderInitialized = false;
   bool _isNoteEditorVisible = false;
   bool _hasOpenedNoteEditorOnce = false;
-  bool _isCustomKeyboardVisible = true;
+  bool _isCustomKeyboardVisible = false;
   bool _isCalculated = false;
   String _expression = '';
   String _expressionResult = '';
@@ -227,6 +227,7 @@ class _EntryFormPageState extends State<EntryFormPage> {
     final incomeDefaults = widget.store.defaultsFor(LedgerEntryType.income);
     final transferDefaults = widget.store.defaultsFor(LedgerEntryType.transfer);
     _type = entry?.type ?? LedgerEntryType.expense;
+    _isCustomKeyboardVisible = entry == null; // 只有新增时自动弹出键盘
     _occurredAt = entry?.occurredAt ?? DateTime.now();
     _expenseCategory =
         entry?.expenseCategory ??

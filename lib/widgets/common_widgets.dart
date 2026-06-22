@@ -48,7 +48,7 @@ class AccountIconBadge extends StatelessWidget {
         alignment: Alignment.center,
         decoration: BoxDecoration(
           color: const Color(0xFF1677FF),
-          borderRadius: BorderRadius.circular(size * 0.3),
+          borderRadius: BorderRadius.circular(size * 0.38),
         ),
         child: Text(
           '支',
@@ -123,6 +123,7 @@ class LedgerEntryTile extends StatelessWidget {
     required this.store,
     this.onTap,
     this.isLast = false,
+    this.hideAccount = false,
     super.key,
   });
 
@@ -130,6 +131,7 @@ class LedgerEntryTile extends StatelessWidget {
   final LedgerStore store;
   final VoidCallback? onTap;
   final bool isLast;
+  final bool hideAccount;
 
   @override
   Widget build(BuildContext context) {
@@ -160,7 +162,7 @@ class LedgerEntryTile extends StatelessWidget {
         : '$amountPrefix${formatMoney(entry.amountInCents)}';
     final timeOnly = _formatTimeOnly(entry.occurredAt);
     final metaLine = [
-      if (entry.type != LedgerEntryType.transfer) accountLine,
+      if (entry.type != LedgerEntryType.transfer && !hideAccount) accountLine,
       timeOnly,
     ].join(' · ');
 

@@ -22,6 +22,7 @@ import 'package:ledger_app/pages/settings_page.dart';
 import 'package:ledger_app/pages/statistics_page.dart';
 import 'package:ledger_app/pages/statistics_prefs.dart';
 import 'package:ledger_app/services/update_service.dart';
+import 'package:ledger_app/pages/account_detail_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -984,69 +985,79 @@ class AccountTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final store = LedgerScope.of(context);
     final iconOption = accountIconOption(account.iconKey);
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: Container(
-        height: 80,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            AccountIconBadge(option: iconOption, size: 38),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(account.name),
-                  if (account.type == AccountType.creditCard &&
-                      account.repaymentDay != null)
-                    Text(
-                      '每月 ${account.repaymentDay} 日还款',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => AccountDetailPage(account: account),
+          ),
+        );
+      },
+      child: Card(
+        margin: const EdgeInsets.only(bottom: 12),
+        child: Container(
+          height: 80,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              AccountIconBadge(option: iconOption, size: 38),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(account.name),
+                    if (account.type == AccountType.creditCard &&
+                        account.repaymentDay != null)
+                      Text(
+                        '每月 ${account.repaymentDay} 日还款',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
                       ),
-                    ),
-                ],
-              ),
-            ),
-            Wrap(
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                Text(
-                  store.isAmountHidden
-                      ? '****'
-                      : formatMoney(account.balanceInCents),
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                PopupMenuButton<String>(
-                  onSelected: (value) {
-                    if (value == 'edit') {
-                      showAccountSheet(context, account: account);
-                    }
-                    if (value == 'delete') {
-                      confirmDelete(
-                        context,
-                        title: '删除账户？',
-                        message: '会同时删除这个账户相关的流水，并同步修正其他账户余额。',
-                        onConfirm: () async {
-                          await store.deleteAccount(account.id);
-                          if (context.mounted) {
-                            showSnack(context, '账户已删除');
-                          }
-                        },
-                      );
-                    }
-                  },
-                  itemBuilder: (context) => const [
-                    PopupMenuItem(value: 'edit', child: Text('编辑')),
-                    PopupMenuItem(value: 'delete', child: Text('删除')),
                   ],
                 ),
-              ],
-            ),
-          ],
+              ),
+              Wrap(
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  Text(
+                    store.isAmountHidden
+                        ? '****'
+                        : formatMoney(account.balanceInCents),
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  PopupMenuButton<String>(
+                    onSelected: (value) {
+                      if (value == 'edit') {
+                        showAccountSheet(context, account: account);
+                      }
+                      if (value == 'delete') {
+                        confirmDelete(
+                          context,
+                          title: '删除账户？',
+                          message: '会同时删除这个账户相关的流水，并同步修正其他账户余额。',
+                          onConfirm: () async {
+                            await store.deleteAccount(account.id);
+                            if (context.mounted) {
+                              showSnack(context, '账户已删除');
+                            }
+                          },
+                        );
+                      }
+                    },
+                    itemBuilder: (context) => const [
+                      PopupMenuItem(value: 'edit', child: Text('编辑')),
+                      PopupMenuItem(value: 'delete', child: Text('删除')),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
