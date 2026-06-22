@@ -2655,122 +2655,111 @@ class _CategoryPickerSection extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 10),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              const spacing = 10.0;
-              final itemWidth = (constraints.maxWidth - spacing * 3) / 4;
-              final rowCount = (items.length / 4).ceil();
-              final gridHeight =
-                  rowCount * itemWidth + math.max(0, rowCount - 1) * 10;
-              return SizedBox(
-                height: gridHeight,
-                child: GridView.builder(
-                  physics: const NeverScrollableScrollPhysics(),
-                  padding: EdgeInsets.zero,
-                  itemCount: items.length,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 4,
-                    mainAxisSpacing: 10,
-                    crossAxisSpacing: spacing,
-                    childAspectRatio: 1,
-                  ),
-                  itemBuilder: (context, index) {
-                    final item = items[index];
-                    final selected =
-                        selectedGroup == item.groupName &&
-                        selectedCategory == item.categoryName;
-                    final itemColor = categoryGroupColor(item.groupName);
-                    const color = Color(0xFF33413D);
-                    return InkWell(
-                      borderRadius: BorderRadius.circular(22),
-                      onTap: () => Navigator.of(context).pop(
-                        CategoryPickResult(item.groupName, item.categoryName),
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            padding: EdgeInsets.zero,
+            itemCount: items.length,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 4,
+              mainAxisSpacing: 10,
+              crossAxisSpacing: 10,
+              childAspectRatio: 1,
+            ),
+            itemBuilder: (context, index) {
+              final item = items[index];
+              final selected =
+                  selectedGroup == item.groupName &&
+                  selectedCategory == item.categoryName;
+              final itemColor = categoryGroupColor(item.groupName);
+              const color = Color(0xFF33413D);
+              return InkWell(
+                borderRadius: BorderRadius.circular(22),
+                onTap: () => Navigator.of(context).pop(
+                  CategoryPickResult(item.groupName, item.categoryName),
+                ),
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 160),
+                      width: double.infinity,
+                      height: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 8,
                       ),
-                      child: Stack(
-                        clipBehavior: Clip.none,
+                      decoration: BoxDecoration(
+                        color: selected
+                            ? itemColor.withValues(alpha: 0.12)
+                            : itemColor.withValues(alpha: 0.055),
+                        borderRadius: BorderRadius.circular(22),
+                        border: Border.all(
+                          color: selected
+                              ? itemColor.withValues(alpha: 0.34)
+                              : itemColor.withValues(alpha: 0.14),
+                        ),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          AnimatedContainer(
-                            duration: const Duration(milliseconds: 160),
-                            width: double.infinity,
-                            height: double.infinity,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 10,
-                            ),
+                          Container(
+                            width: 30,
+                            height: 30,
                             decoration: BoxDecoration(
-                              color: selected
-                                  ? itemColor.withValues(alpha: 0.12)
-                                  : itemColor.withValues(alpha: 0.055),
-                              borderRadius: BorderRadius.circular(22),
-                              border: Border.all(
-                                color: selected
-                                    ? itemColor.withValues(alpha: 0.34)
-                                    : itemColor.withValues(alpha: 0.14),
-                              ),
+                              color: itemColor.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Container(
-                                  width: 30,
-                                  height: 30,
-                                  decoration: BoxDecoration(
-                                    color: itemColor.withValues(alpha: 0.12),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Icon(
-                                    categoryIcon(item.iconKey),
-                                    size: 18,
-                                    color: itemColor,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                SizedBox(
-                                  width: double.infinity,
-                                  child: FittedBox(
-                                    fit: BoxFit.scaleDown,
-                                    child: Text(
-                                      item.categoryName,
-                                      maxLines: 1,
-                                      softWrap: false,
-                                      textAlign: TextAlign.center,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .labelMedium
-                                          ?.copyWith(
-                                            color: color,
-                                            fontWeight: FontWeight.w700,
-                                            letterSpacing: 0,
-                                          ),
-                                    ),
-                                  ),
-                                ),
-                              ],
+                            child: Icon(
+                              categoryIcon(item.iconKey),
+                              size: 18,
+                              color: itemColor,
                             ),
                           ),
-                          if (selected)
-                            Positioned(
-                              right: -3,
-                              bottom: -3,
-                              child: Container(
-                                width: 20,
-                                height: 20,
-                                decoration: const BoxDecoration(
-                                  color: Color(0xFF069B9B),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(
-                                  Icons.check,
-                                  size: 14,
-                                  color: Colors.white,
-                                ),
+                          const SizedBox(height: 6),
+                          SizedBox(
+                            width: double.infinity,
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                item.categoryName,
+                                maxLines: 1,
+                                softWrap: false,
+                                textAlign: TextAlign.center,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .labelMedium
+                                    ?.copyWith(
+                                      color: color,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: 0,
+                                    ),
                               ),
                             ),
+                          ),
                         ],
                       ),
-                    );
-                  },
+                    ),
+                    if (selected)
+                      Positioned(
+                        right: -3,
+                        bottom: -3,
+                        child: Container(
+                          width: 20,
+                          height: 20,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF069B9B),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.check,
+                            size: 14,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               );
             },

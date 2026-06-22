@@ -8,8 +8,9 @@
 - **智能录入**：语音识别（百度）、图片 OCR + AI 理解账单
 - **数据同步**：WebDAV 手动/自动同步到 NAS
 - **统计分析**：分类排行、筛选统计、时间维度分析
-- **账户管理**：现金、银行卡、在线支付、信用卡等多类型支持
+- **账户管理**：现金、银行卡、在线支付、信用卡等多类型支持，支持账户详情页查看余额趋势和流水
 - **自动更新**：APP 启动时自动检测 GitHub 新版本并提示更新
+- **自定义键盘**：记账页面内置自定义数字键盘，支持加减法运算
 
 ## 技术栈
 
@@ -24,10 +25,14 @@
 # 安装依赖
 flutter pub get
 
-# 构建 release APK
+# 构建 debug APK（推荐日常测试，约 12s）
+flutter build apk --debug
+
+# 构建 release APK（约 60s）
 flutter build apk --release
 
 # APK 输出路径
+# android/app/build/outputs/flutter-apk/app-debug.apk
 # android/app/build/outputs/flutter-apk/app-release.apk
 ```
 
@@ -35,7 +40,7 @@ flutter build apk --release
 
 ```bash
 adb devices
-adb -s <DEVICE_ID> install -r android/app/build/outputs/flutter-apk/app-release.apk
+adb -s <DEVICE_ID> install -r android/app/build/outputs/flutter-apk/app-debug.apk
 ```
 
 ## 项目结构
@@ -44,26 +49,31 @@ adb -s <DEVICE_ID> install -r android/app/build/outputs/flutter-apk/app-release.
 lib/
 ├── main.dart              # 主入口 + 首页
 ├── models/                # 数据模型
-├── pages/                 # 页面
+├── pages/
+│   ├── account_detail_page.dart  # 账户详情页
 │   ├── statistics_page.dart
 │   ├── settings_page.dart
 │   ├── search_page.dart
 │   └── entry_form_page.dart
-├── services/              # 服务层
+├── services/
 │   ├── ai_ledger_service.dart
 │   ├── baidu_speech_service.dart
 │   ├── baidu_ocr_service.dart
 │   ├── ledger_text_parser.dart
+│   ├── ledger_store.dart
 │   └── update_service.dart
 ├── store/                 # 状态管理
 ├── utils/                 # 工具函数
-└── widgets/               # 通用组件
+└── widgets/
+    ├── custom_keyboard.dart  # 自定义数字键盘
+    ├── amount_display.dart   # 金额显示组件
+    └── common_widgets.dart
 ```
 
 ## 版本发布
 
 1. 修改 `pubspec.yaml` 中的版本号
-2. `flutter build apk --release`
+2. `flutter build apk --debug`（日常测试）或 `flutter build apk --release`（发布）
 3. 上传 APK 到 GitHub Release
 
 ```bash
@@ -71,5 +81,5 @@ gh release create v<VERSION> \
   --repo AKABOOZ/booz-ledger \
   --title "波哥记账 v<VERSION>" \
   --notes "更新内容" \
-  android/app/build/outputs/flutter-apk/app-release.apk
+  android/app/build/outputs/flutter-apk/app-debug.apk
 ```

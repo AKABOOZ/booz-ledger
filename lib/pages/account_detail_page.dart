@@ -368,8 +368,25 @@ class BalanceLineChartPainter extends CustomPainter {
     final range = (maxBalance - minBalance).toDouble();
     if (range == 0) return;
 
-    // 左侧预留空间给数字标签
-    const labelWidth = 20.0;
+    // 计算最长标签的宽度
+    const gap = 8.0; // 标签文字右边缘到折线图的间距
+    final labelTextPaint = TextPainter(
+      textDirection: ui.TextDirection.ltr,
+    );
+    double maxLabelWidth = 0;
+    for (var i = 0; i <= 4; i++) {
+      final value = maxBalance - (range * i / 4).toInt();
+      labelTextPaint.text = TextSpan(
+        text: _formatValue(value),
+        style: const TextStyle(fontSize: 8),
+      );
+      labelTextPaint.layout();
+      if (labelTextPaint.width > maxLabelWidth) {
+        maxLabelWidth = labelTextPaint.width;
+      }
+    }
+
+    final labelWidth = maxLabelWidth + gap;
     final chartWidth = size.width - labelWidth;
 
     // 画5条纵轴参考线（虚线）及左侧数据标签
@@ -378,25 +395,21 @@ class BalanceLineChartPainter extends CustomPainter {
       ..strokeWidth = 1
       ..style = PaintingStyle.stroke;
 
-    final textPaint = TextPainter(
-      textDirection: ui.TextDirection.ltr,
-    );
-
     for (var i = 0; i <= 4; i++) {
       final y = (i / 4) * size.height;
       _drawDashedLine(canvas, Offset(labelWidth, y), Offset(size.width, y), dashPaint, 4);
 
       // 在每条线左侧显示对应的数据
       final value = maxBalance - (range * i / 4).toInt();
-      textPaint.text = TextSpan(
+      labelTextPaint.text = TextSpan(
         text: _formatValue(value),
         style: TextStyle(
           color: Colors.white.withOpacity(0.5),
           fontSize: 8,
         ),
       );
-      textPaint.layout();
-      textPaint.paint(canvas, Offset(0, y - 5));
+      labelTextPaint.layout();
+      labelTextPaint.paint(canvas, Offset(labelWidth - labelTextPaint.width - gap, y - 5));
     }
 
     final paint = Paint()
@@ -510,6 +523,7 @@ class BalanceLineChartPainter extends CustomPainter {
     } else if (yuan >= 1000) {
       return '${(yuan / 1000).toStringAsFixed(1)}K';
     }
-    return formatMoney(value);
+    // 去掉 formatMoney 的 ¥ 前缀
+    return formatMoney(value).replaceFirst('¥', '').trim();
   }
 }
