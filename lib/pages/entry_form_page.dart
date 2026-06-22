@@ -264,6 +264,13 @@ class _EntryFormPageState extends State<EntryFormPage> {
     _amountController.text = entry == null
         ? ''
         : moneyInputValue(entry.amountInCents);
+    if (entry != null) {
+      // 所见即所得：始终显示两位小数，_expression 和显示完全一致
+      final amount = entry.amountInCents / 100;
+      final displayText = amount.toStringAsFixed(2);
+      _amountController.text = displayText;
+      _expression = displayText;
+    }
     _noteController.text = entry?.note ?? '';
     if (widget.initialVoicePath != null) {
       _isProcessing = true;
@@ -1708,6 +1715,7 @@ class _EntryFormPageState extends State<EntryFormPage> {
       if (key == '=') {
         _calculateExpression();
         _isCalculated = true;
+        _expression = ''; // 清除表达式，让按钮变回"确定"
         return;
       }
 
@@ -1760,12 +1768,9 @@ class _EntryFormPageState extends State<EntryFormPage> {
       // 有运算符时，计算结果
       _calculateExpression();
     } else {
-      // 纯数字
-      final amount = double.tryParse(_expression);
-      if (amount != null) {
-        _amountController.text = amount.toStringAsFixed(2);
-        _expressionResult = _expression;
-      }
+      // 所见即所得：直接显示 _expression 原文
+      _amountController.text = _expression;
+      _expressionResult = _expression;
     }
   }
 
@@ -2038,13 +2043,8 @@ class _AmountInputState extends State<AmountInput> {
   @override
   void initState() {
     super.initState();
-    // 初始化时格式化已有的值
-    if (widget.controller.text.isNotEmpty) {
-      final cents = parseMoney(widget.controller.text);
-      if (cents != null) {
-        widget.controller.text = formatMoney(cents).replaceFirst('¥', '');
-      }
-    }
+    // 不在这里重新格式化，避免加逗号导致与 _expression 不同步
+    // 格式化统一由 _updateAmountFromExpression 处理
   }
 
   @override
@@ -3744,7 +3744,7 @@ class _KeyboardWithButton extends StatelessWidget {
       child: ClipPath(
         clipper: _KeyboardShapeClipper(),
         child: Container(
-          color: Colors.white,
+          color: const Color(0xFFE4E5E9),
           child: SizedBox(
             width: double.infinity,
             child: Stack(
