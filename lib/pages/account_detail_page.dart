@@ -206,24 +206,23 @@ class _AccountDetailPageState extends State<AccountDetailPage> {
   ) {
     final result = <DailyBalance>[];
 
-    // 获取该账户的所有流水
+    // 只获取30天范围内的流水
+    final start = DateTime(now.year, now.month, now.day)
+        .subtract(const Duration(days: 29));
     final entries = store.entries.where((e) {
-      return e.toAccountId == account.id || e.fromAccountId == account.id;
+      final entryDay = DateTime(e.occurredAt.year, e.occurredAt.month, e.occurredAt.day);
+      final isAccountRelated = e.toAccountId == account.id || e.fromAccountId == account.id;
+      return isAccountRelated && !entryDay.isBefore(start);
     }).toList();
 
-    // 从当前余额正向计算每天的余额
-    // 先算出第1天开始前的余额（当前余额减去所有交易的净变化）
+    // 计算30天内的总变化
     int totalChange = 0;
     for (final entry in entries) {
-      final entryDay = DateTime(entry.occurredAt.year, entry.occurredAt.month, entry.occurredAt.day);
-      final start = DateTime(now.year, now.month, now.day).subtract(const Duration(days: 29));
-      if (entryDay.isAfter(start)) {
-        if (entry.toAccountId == account.id) {
-          totalChange += entry.amountInCents;
-        }
-        if (entry.fromAccountId == account.id) {
-          totalChange -= entry.amountInCents;
-        }
+      if (entry.toAccountId == account.id) {
+        totalChange += entry.amountInCents;
+      }
+      if (entry.fromAccountId == account.id) {
+        totalChange -= entry.amountInCents;
       }
     }
 
@@ -241,9 +240,6 @@ class _AccountDetailPageState extends State<AccountDetailPage> {
         return eDay == dayStart;
       }).toList();
 
-      // 记录当天结束时的余额（先记录，再加当天变化）
-      result.add(DailyBalance(date: dayStart, balance: balance));
-
       // 加上当天的净变化
       for (final entry in dayEntries) {
         if (entry.toAccountId == account.id) {
@@ -253,6 +249,9 @@ class _AccountDetailPageState extends State<AccountDetailPage> {
           balance -= entry.amountInCents;
         }
       }
+
+      // 记录当天结束时的余额
+      result.add(DailyBalance(date: dayStart, balance: balance));
     }
 
     return result;
