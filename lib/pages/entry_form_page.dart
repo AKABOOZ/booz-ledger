@@ -18,6 +18,7 @@ import 'package:ledger_app/utils/helpers.dart';
 import 'package:ledger_app/widgets/common_widgets.dart';
 import 'package:ledger_app/widgets/voice_widgets.dart';
 import 'package:ledger_app/widgets/custom_keyboard.dart';
+import 'package:ledger_app/theme/app_theme.dart';
 
 class ExpenseCategorySelector extends StatelessWidget {
   const ExpenseCategorySelector({
@@ -50,7 +51,7 @@ class ExpenseCategorySelector extends StatelessWidget {
                 Text(
                   group.name,
                   style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: const Color(0xFF65736F),
+                    color: context.appColors.onBackgroundMid,
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -76,8 +77,8 @@ class ExpenseCategorySelector extends StatelessWidget {
                         ),
                         decoration: BoxDecoration(
                           color: selected
-                              ? const Color(0xFFE0F2EF)
-                              : Colors.white,
+                              ? context.appColors.surfaceDim
+                              : context.appColors.surface,
                           borderRadius: BorderRadius.circular(22),
                         ),
                         child: Column(
@@ -417,9 +418,9 @@ class _EntryFormPageState extends State<EntryFormPage> {
       borderRadius: BorderRadius.circular(22),
       child: Ink(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: context.appColors.surface,
           borderRadius: BorderRadius.circular(22),
-          border: Border.all(color: const Color(0xFFE2E8E2)),
+          border: Border.all(color: context.appColors.outline),
         ),
         padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
         child: Row(
@@ -433,7 +434,7 @@ class _EntryFormPageState extends State<EntryFormPage> {
                     '备注',
                     style: TextStyle(
                       fontSize: 13,
-                      color: Colors.black.withValues(alpha: 0.58),
+                      color: context.appColors.onBackgroundMid,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -445,8 +446,8 @@ class _EntryFormPageState extends State<EntryFormPage> {
                       fontSize: 16,
                       height: 1.4,
                       color: note.isEmpty
-                          ? Colors.black.withValues(alpha: 0.35)
-                          : const Color(0xFF1D1D1F),
+                          ? context.appColors.onBackgroundLight
+                          : context.appColors.onBackground,
                     ),
                   ),
                 ],
@@ -471,10 +472,10 @@ class _EntryFormPageState extends State<EntryFormPage> {
         style: FilledButton.styleFrom(
           shape: const CircleBorder(),
           padding: EdgeInsets.zero,
-          backgroundColor: const Color(0xFFE0F2EF),
-          foregroundColor: const Color(0xFF167C80),
-          disabledBackgroundColor: const Color(0xFFE4E9E6),
-          disabledForegroundColor: const Color(0xFF94A29C),
+          backgroundColor: context.appColors.surfaceDim,
+          foregroundColor: context.appColors.primary,
+          disabledBackgroundColor: context.appColors.surfaceAlt,
+          disabledForegroundColor: context.appColors.onBackgroundLight,
           elevation: 0,
         ),
         child: const Icon(Icons.image_outlined, size: 25),
@@ -522,8 +523,8 @@ class _EntryFormPageState extends State<EntryFormPage> {
               child: FilledButton(
                 onPressed: _closeNoteEditor,
                 style: FilledButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: const Color(0xFF1D1D1F),
+                  backgroundColor: context.appColors.surface,
+                  foregroundColor: context.appColors.onBackground,
                 ),
                 child: const Text('取消'),
               ),
@@ -544,8 +545,8 @@ class _EntryFormPageState extends State<EntryFormPage> {
   Widget _buildNoteEditorPanelScaffold({required Widget child}) {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 18),
-      decoration: const BoxDecoration(
-        color: Color(0xFFF8FAF6),
+      decoration: BoxDecoration(
+        color: context.appColors.background,
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(24),
           topRight: Radius.circular(24),
@@ -1106,6 +1107,9 @@ class _EntryFormPageState extends State<EntryFormPage> {
                       padding: const EdgeInsets.symmetric(horizontal: 14),
                       shape: const StadiumBorder(),
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      backgroundColor: Theme.of(context).brightness == Brightness.dark
+                          ? const Color(0xFF2B9E96)
+                          : const Color(0xFF069B9B),
                     ),
                     child: const Icon(
                       Icons.check,
@@ -1141,7 +1145,7 @@ class _EntryFormPageState extends State<EntryFormPage> {
                           vertical: 12,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFE0F2EF),
+                          color: context.appColors.surfaceDim,
                           borderRadius: BorderRadius.circular(18),
                         ),
                         child: Row(
@@ -1153,9 +1157,9 @@ class _EntryFormPageState extends State<EntryFormPage> {
                                 child: CircularProgressIndicator(strokeWidth: 2),
                               ),
                             ] else ...[
-                              const Icon(
+                              Icon(
                                 Icons.check_circle,
-                                color: Color(0xFF167C80),
+                                color: context.appColors.primary,
                                 size: 18,
                               ),
                             ],
@@ -1360,7 +1364,7 @@ class _EntryFormPageState extends State<EntryFormPage> {
                   ),
                   child: Container(
                     padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-                    decoration: const BoxDecoration(color: Color(0xFFF8FAF6)),
+                    decoration: BoxDecoration(color: context.appColors.background),
                     child: Row(
                       children: [
                         if (_isEditing) ...[
@@ -1370,7 +1374,7 @@ class _EntryFormPageState extends State<EntryFormPage> {
                               onPressed: _confirmDelete,
                               style: OutlinedButton.styleFrom(
                                 side: const BorderSide(color: Colors.red),
-                                backgroundColor: Colors.white,
+                                backgroundColor: context.appColors.surface,
                                 minimumSize: const Size.fromHeight(54),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(22),
@@ -1388,8 +1392,8 @@ class _EntryFormPageState extends State<EntryFormPage> {
                             child: FilledButton(
                               onPressed: () => _submit(continueAfterSave: true),
                               style: FilledButton.styleFrom(
-                                backgroundColor: const Color(0xFFE0F2EF),
-                                foregroundColor: const Color(0xFF167C80),
+                                backgroundColor: context.appColors.surfaceDim,
+                                foregroundColor: context.appColors.primary,
                               ),
                               child: const Text('再记一笔'),
                             ),
@@ -1399,6 +1403,12 @@ class _EntryFormPageState extends State<EntryFormPage> {
                         Expanded(
                           child: FilledButton(
                             onPressed: _submit,
+                            style: FilledButton.styleFrom(
+                              backgroundColor: Theme.of(context).brightness == Brightness.dark
+                                  ? const Color(0xFF2B9E96)
+                                  : const Color(0xFF069B9B),
+                              foregroundColor: Colors.white,
+                            ),
                             child: Text('保存${_type.label}'),
                           ),
                         ),
@@ -1937,7 +1947,7 @@ class _EntryTypeSwitchState extends State<EntryTypeSwitch> {
       child: Container(
         padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
-          color: const Color(0xFFEFF4F1),
+          color: context.appColors.surfaceAlt,
           borderRadius: BorderRadius.circular(22),
         ),
         child: Stack(
@@ -1964,7 +1974,7 @@ class _EntryTypeSwitchState extends State<EntryTypeSwitch> {
                         width: itemWidth,
                         child: Container(
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: context.appColors.surface,
                             borderRadius: BorderRadius.circular(18),
                             boxShadow: const [
                               BoxShadow(
@@ -2003,7 +2013,7 @@ class _EntryTypeSwitchState extends State<EntryTypeSwitch> {
                         style: Theme.of(context).textTheme.titleSmall?.copyWith(
                           color: type == _value
                               ? Theme.of(context).colorScheme.primary
-                              : const Color(0xFF687570),
+                              : context.appColors.onBackgroundMid,
                           fontWeight: type == _value
                               ? FontWeight.w800
                               : FontWeight.w500,
@@ -2091,7 +2101,7 @@ class _AmountInputState extends State<AmountInput> {
                 floatingLabelBehavior: FloatingLabelBehavior.always,
                 prefixText: '¥ ',
                 filled: true,
-                fillColor: Colors.white,
+                fillColor: context.appColors.inputFill,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(28),
                   borderSide: BorderSide.none,
@@ -2102,7 +2112,7 @@ class _AmountInputState extends State<AmountInput> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(28),
-                  borderSide: const BorderSide(color: Color(0x33167C80), width: 1),
+                  borderSide: BorderSide(color: context.appColors.primary.withValues(alpha: 0.2), width: 1),
                 ),
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 20,
@@ -2136,9 +2146,9 @@ class _AmountInputState extends State<AmountInput> {
                 bottom: 6,
                 child: Text(
                   widget.expression,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
-                    color: Color(0xFF7A807E),
+                    color: context.appColors.onBackgroundMid,
                   ),
                 ),
               ),
@@ -2174,7 +2184,7 @@ class SelectFieldCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.white,
+      color: context.appColors.surface,
       borderRadius: BorderRadius.circular(24),
       child: InkWell(
         borderRadius: BorderRadius.circular(24),
@@ -2198,7 +2208,7 @@ class SelectFieldCard extends StatelessWidget {
                     Text(
                       label,
                       style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        color: const Color(0xFF7A8782),
+                        color: context.appColors.onBackgroundMid,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -2464,8 +2474,8 @@ class _CategoryPickerRoutePage extends StatelessWidget {
               child: RepaintBoundary(
                 child: Container(
                   height: MediaQuery.sizeOf(context).height * 0.74,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFF8FAF6),
+                  decoration: BoxDecoration(
+                    color: context.appColors.background,
                     borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(28),
                       topRight: Radius.circular(28),
@@ -2630,7 +2640,7 @@ class _CategoryPickerSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final sectionColor = title == '最近使用'
-        ? const Color(0xFF069B9B)
+        ? context.appColors.primary
         : categoryGroupColor(title);
     return Padding(
       padding: const EdgeInsets.only(bottom: 18),
@@ -2674,7 +2684,7 @@ class _CategoryPickerSection extends StatelessWidget {
                   selectedGroup == item.groupName &&
                   selectedCategory == item.categoryName;
               final itemColor = categoryGroupColor(item.groupName);
-              const color = Color(0xFF33413D);
+              final color = context.appColors.onBackground;
               return InkWell(
                 borderRadius: BorderRadius.circular(22),
                 onTap: () => Navigator.of(context).pop(
@@ -2750,8 +2760,8 @@ class _CategoryPickerSection extends StatelessWidget {
                         child: Container(
                           width: 20,
                           height: 20,
-                          decoration: const BoxDecoration(
-                            color: Color(0xFF069B9B),
+                          decoration: BoxDecoration(
+                            color: context.appColors.primary,
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
@@ -2908,7 +2918,7 @@ Future<String?> showAccountPickerSheet(
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
             child: Material(
-              color: selected ? const Color(0xFFE0F2EF) : Colors.white,
+              color: selected ? context.appColors.surfaceDim : context.appColors.surface,
               borderRadius: BorderRadius.circular(24),
               child: ListTile(
                 shape: RoundedRectangleBorder(
@@ -2961,17 +2971,17 @@ class _AccountPickerSectionTitle extends StatelessWidget {
           width: 5,
           height: 20,
           decoration: BoxDecoration(
-            color: const Color(0xFF069B9B),
+            color: context.appColors.primary,
             borderRadius: BorderRadius.circular(999),
           ),
         ),
         const SizedBox(width: 8),
         Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w800,
-            color: Color(0xFF16211F),
+            color: context.appColors.onBackground,
           ),
         ),
       ],
@@ -3011,8 +3021,8 @@ class _RecentAccountPickCard extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
               decoration: BoxDecoration(
                 color: selected
-                    ? const Color(0xFFE0F2EF)
-                    : const Color(0xFFF4F8F5),
+                    ? context.appColors.surfaceDim
+                    : context.appColors.surfaceAlt,
                 borderRadius: BorderRadius.circular(22),
                 border: Border.all(
                   color: selected
@@ -3040,7 +3050,7 @@ class _RecentAccountPickCard extends StatelessWidget {
                               fontSize: fontSize,
                               height: 1,
                               fontWeight: FontWeight.w800,
-                              color: const Color(0xFF2F3A37),
+                              color: context.appColors.onBackground,
                             ),
                           ),
                         ),
@@ -3057,8 +3067,8 @@ class _RecentAccountPickCard extends StatelessWidget {
                 child: Container(
                   width: 20,
                   height: 20,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF069B9B),
+                  decoration: BoxDecoration(
+                    color: context.appColors.primary,
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(Icons.check, color: Colors.white, size: 14),
@@ -3202,8 +3212,8 @@ class _CategoryFormPageState extends State<CategoryFormPage> {
                       ),
                       decoration: BoxDecoration(
                         color: selected
-                            ? const Color(0xFFE0F2EF)
-                            : Colors.white,
+                            ? context.appColors.surfaceDim
+                            : context.appColors.surface,
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Column(
@@ -3300,8 +3310,8 @@ class AccountTypeSelector extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
             decoration: BoxDecoration(
               color: selected
-                  ? const Color(0xFFE0F2EF)
-                  : const Color(0xFFF2F6F3),
+                  ? context.appColors.surfaceDim
+                  : context.appColors.surfaceAlt,
               borderRadius: BorderRadius.circular(20),
             ),
             child: Row(
@@ -3382,7 +3392,7 @@ Future<AccountType?> showAccountTypePickerSheet(
                   ][index];
                   final selected = type == selectedType;
                   return Material(
-                    color: selected ? const Color(0xFFE0F2EF) : Colors.white,
+                    color: selected ? context.appColors.surfaceDim : context.appColors.surface,
                     borderRadius: BorderRadius.circular(24),
                     child: ListTile(
                       shape: RoundedRectangleBorder(
@@ -3482,8 +3492,8 @@ Future<String?> showAccountIconPickerSheet(
                     child: Container(
                       decoration: BoxDecoration(
                         color: selected
-                            ? const Color(0xFFE0F2EF)
-                            : Colors.white,
+                            ? context.appColors.surfaceDim
+                            : context.appColors.surface,
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Column(
@@ -3612,7 +3622,7 @@ class _AccountFormPageState extends State<AccountFormPage> {
               ),
               const SizedBox(height: 12),
               Material(
-                color: Colors.white,
+                color: context.appColors.surface,
                 borderRadius: BorderRadius.circular(24),
                 child: InkWell(
                   borderRadius: BorderRadius.circular(24),
@@ -3681,6 +3691,12 @@ class _AccountFormPageState extends State<AccountFormPage> {
               padding: EdgeInsets.fromLTRB(16, 10, 16, 16 + keyboardOffset),
               child: FilledButton(
                 onPressed: _submit,
+                style: Theme.of(context).brightness == Brightness.dark
+                    ? FilledButton.styleFrom(
+                        backgroundColor: const Color(0xFF2B9E96),
+                        foregroundColor: Colors.white,
+                      )
+                    : null,
                 child: Text(_isEditing ? '保存修改' : '确认添加'),
               ),
             ),
@@ -3746,7 +3762,7 @@ class _KeyboardWithButton extends StatelessWidget {
       child: ClipPath(
         clipper: _KeyboardShapeClipper(),
         child: Container(
-          color: const Color(0xFFE4E5E9),
+          color: context.appColors.surfaceAlt,
           child: SizedBox(
             width: double.infinity,
             child: Stack(
@@ -3766,10 +3782,10 @@ class _KeyboardWithButton extends StatelessWidget {
                     child: GestureDetector(
                       onTap: onCollapse,
                       behavior: HitTestBehavior.opaque,
-                      child: const Icon(
+                      child: Icon(
                         Icons.keyboard_arrow_down,
                         size: 20,
-                        color: Color(0xFF999999),
+                        color: context.appColors.onBackgroundLight,
                       ),
                     ),
                   ),

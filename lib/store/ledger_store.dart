@@ -25,6 +25,7 @@ class LedgerStore extends ChangeNotifier {
   static const _salaryIncomeMaskedKey = 'salary_income_masked';
   static const _entryFormDefaultsKey = 'entry_form_defaults_v1';
   static const _webdavAutoSyncEnabledKey = 'webdav_auto_sync_enabled';
+  static const _themeModeKey = 'theme_mode';
 
   final List<Account> _accounts = [];
   final List<LedgerEntry> _entries = [];
@@ -35,6 +36,7 @@ class LedgerStore extends ChangeNotifier {
   bool _isAmountHidden = true;
   bool _isSalaryIncomeMasked = true;
   bool _isWebdavAutoSyncEnabled = false;
+  int _themeMode = 0; // 0=system, 1=light, 2=dark
   bool _isVoiceAiEnabled = true;
   final Map<LedgerEntryType, EntryFormDefaults> _entryFormDefaults = {};
   String? _baiduApiKey;
@@ -55,6 +57,7 @@ class LedgerStore extends ChangeNotifier {
   bool get isAmountHidden => _isAmountHidden;
   bool get isSalaryIncomeMasked => _isSalaryIncomeMasked;
   bool get isWebdavAutoSyncEnabled => _isWebdavAutoSyncEnabled;
+  int get themeMode => _themeMode;
   bool get isVoiceAiEnabled => _isVoiceAiEnabled;
   List<Account> get accounts => List.unmodifiable(_accounts);
   EntryFormDefaults defaultsFor(LedgerEntryType type) {
@@ -99,6 +102,13 @@ class LedgerStore extends ChangeNotifier {
     _isWebdavAutoSyncEnabled = value;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_webdavAutoSyncEnabledKey, value);
+    notifyListeners();
+  }
+
+  Future<void> setThemeMode(int value) async {
+    _themeMode = value;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_themeModeKey, value);
     notifyListeners();
   }
 
@@ -313,6 +323,7 @@ class LedgerStore extends ChangeNotifier {
     _isSalaryIncomeMasked = prefs.getBool(_salaryIncomeMaskedKey) ?? true;
     _isWebdavAutoSyncEnabled =
         prefs.getBool(_webdavAutoSyncEnabledKey) ?? false;
+    _themeMode = prefs.getInt(_themeModeKey) ?? 0;
     final rawDefaults = prefs.getString(_entryFormDefaultsKey);
     if (rawDefaults != null) {
       final decoded = jsonDecode(rawDefaults) as Map<String, Object?>;

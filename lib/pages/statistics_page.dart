@@ -13,6 +13,7 @@ import 'package:ledger_app/pages/entry_form_page.dart';
 import 'package:ledger_app/pages/account_detail_page.dart';
 import 'package:ledger_app/store/ledger_store.dart';
 import 'package:ledger_app/utils/helpers.dart';
+import 'package:ledger_app/theme/app_theme.dart';
 import 'package:ledger_app/widgets/common_widgets.dart';
 
 
@@ -338,12 +339,12 @@ class StatisticsSummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final netColor = totals.net >= 0
-        ? const Color(0xFF167C80)
+        ? context.appColors.primary
         : const Color(0xFFE2554F);
     return Container(
       padding: const EdgeInsets.fromLTRB(14, 14, 14, 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.appColors.surface,
         borderRadius: BorderRadius.circular(20),
         boxShadow: const [
           BoxShadow(
@@ -375,10 +376,10 @@ class StatisticsSummaryCard extends StatelessWidget {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.calendar_month_outlined,
                               size: 20,
-                              color: Color(0xFF111817),
+                              color: context.appColors.onBackground,
                             ),
                             const SizedBox(width: 6),
                             Text(
@@ -432,7 +433,7 @@ class StatisticsSummaryCard extends StatelessWidget {
             Text(
               '这个周期还没有流水',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: const Color(0xFF8B9A94),
+                color: context.appColors.onBackgroundLight,
                 letterSpacing: 0,
               ),
             ),
@@ -456,9 +457,9 @@ class PeriodIconButton extends StatelessWidget {
       height: 40,
       child: IconButton(
         onPressed: onPressed,
-        icon: Icon(icon, color: const Color(0xFF167C80)),
+        icon: Icon(icon, color: context.appColors.primary),
         style: IconButton.styleFrom(
-          backgroundColor: const Color(0xFFE0F2EF),
+          backgroundColor: context.appColors.surfaceDim,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
           ),
@@ -486,7 +487,7 @@ class SummaryMetric extends StatelessWidget {
         Text(
           label,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: const Color(0xFF7A8782),
+            color: context.appColors.onBackgroundMid,
             fontWeight: FontWeight.w600,
             letterSpacing: 0,
           ),
@@ -515,7 +516,7 @@ class MetricDivider extends StatelessWidget {
       width: 1,
       height: 36,
       margin: const EdgeInsets.symmetric(horizontal: 8),
-      color: const Color(0xFFE6ECE9),
+      color: context.appColors.divider,
     );
   }
 }
@@ -546,7 +547,7 @@ class StatisticsSlidingSwitch<T> extends StatelessWidget {
       height: height,
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: const Color(0xFFEFF4F1),
+        color: context.appColors.surfaceAlt,
         borderRadius: BorderRadius.circular(height / 2),
       ),
       child: LayoutBuilder(
@@ -563,7 +564,7 @@ class StatisticsSlidingSwitch<T> extends StatelessWidget {
                 width: itemWidth,
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: context.appColors.surface,
                     borderRadius: BorderRadius.circular((height - 8) / 2),
                     boxShadow: const [
                       BoxShadow(
@@ -622,7 +623,7 @@ class StatisticsSwitchTapTarget extends StatelessWidget {
           duration: const Duration(milliseconds: 180),
           curve: Curves.easeOutCubic,
           style: TextStyle(
-            color: selected ? const Color(0xFF167C80) : const Color(0xFF65736F),
+            color: selected ? context.appColors.primary : context.appColors.onBackgroundMid,
             fontWeight: FontWeight.w800,
             fontSize: 13,
             letterSpacing: 0,
@@ -669,8 +670,8 @@ Future<StatisticsPeriodResult?> showStatisticsPeriodPicker(
           final monthYear = draftMonth.year;
           final decadeEnd = draftDecadeStart + 9;
           return Container(
-            decoration: const BoxDecoration(
-              color: Colors.white,
+            decoration: BoxDecoration(
+              color: context.appColors.dialogBackground,
               borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
             ),
             child: SafeArea(
@@ -803,6 +804,12 @@ Future<StatisticsPeriodResult?> showStatisticsPeriodPicker(
                       width: double.infinity,
                       height: 56,
                       child: FilledButton(
+                        style: Theme.of(context).brightness == Brightness.dark
+                            ? FilledButton.styleFrom(
+                                backgroundColor: const Color(0xFF2B9E96),
+                                foregroundColor: Colors.white,
+                              )
+                            : null,
                         onPressed: () {
                           Navigator.of(context).pop(
                             StatisticsPeriodResult(
@@ -876,16 +883,16 @@ class PeriodOptionButton extends StatelessWidget {
         duration: const Duration(milliseconds: 160),
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: selected ? const Color(0xFFE0F2EF) : const Color(0xFFE4E6E5),
+          color: selected ? context.appColors.surfaceDim : context.appColors.surfaceAlt,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: selected ? const Color(0xFF069B9B) : Colors.transparent,
+            color: selected ? context.appColors.primary : Colors.transparent,
           ),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: selected ? const Color(0xFF167C80) : const Color(0xFF65736F),
+            color: selected ? context.appColors.primary : context.appColors.onBackgroundMid,
             fontWeight: FontWeight.w800,
             letterSpacing: 0,
           ),
@@ -976,7 +983,7 @@ class _StatisticsBlockState extends State<StatisticsBlock>
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.appColors.surface,
         borderRadius: BorderRadius.circular(20),
         boxShadow: const [
           BoxShadow(
@@ -1015,7 +1022,7 @@ class _StatisticsBlockState extends State<StatisticsBlock>
                               : '按小类汇总，点分类查看明细',
                           style: Theme.of(context).textTheme.bodySmall
                               ?.copyWith(
-                                color: const Color(0xFF7A8782),
+                                color: context.appColors.onBackgroundMid,
                                 letterSpacing: 0,
                               ),
                         ),
@@ -1038,7 +1045,7 @@ class _StatisticsBlockState extends State<StatisticsBlock>
                     Text(
                       '共$totalCount笔',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: const Color(0xFF94A29C),
+                        color: context.appColors.onBackgroundLight,
                         fontSize: 11,
                         letterSpacing: 0,
                       ),
@@ -1063,7 +1070,7 @@ class _StatisticsBlockState extends State<StatisticsBlock>
                 store: widget.store,
               ),
               const SizedBox(height: 12),
-              const Divider(height: 1, thickness: 1, color: Color(0xFFE9EFEC)),
+              Divider(height: 1, thickness: 1, color: context.appColors.divider),
               const SizedBox(height: 14),
               ClipRect(
                 child: Column(
@@ -1405,7 +1412,7 @@ class StatisticsExpandButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const color = Color(0xFF7A8782);
+    final color = context.appColors.onBackgroundMid;
     return Center(
       child: TextButton.icon(
         onPressed: onTap,
@@ -1458,7 +1465,7 @@ class StatisticsEmptyState extends StatelessWidget {
               subtitle,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: const Color(0xFF7A8782),
+                color: context.appColors.onBackgroundMid,
                 letterSpacing: 0,
               ),
             ),
@@ -1503,7 +1510,7 @@ class StatRankRow extends StatelessWidget {
       letterSpacing: 0,
     );
     final percentStyle = Theme.of(context).textTheme.bodySmall?.copyWith(
-      color: const Color(0xFF7A8782),
+      color: context.appColors.onBackgroundMid,
       letterSpacing: 0,
     );
     return Padding(
@@ -1581,7 +1588,7 @@ class StatRankRow extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                             style: Theme.of(context).textTheme.bodySmall
                                 ?.copyWith(
-                                  color: const Color(0xFF65736F),
+                                  color: context.appColors.onBackgroundMid,
                                   letterSpacing: 0,
                                 ),
                           ),
@@ -1590,7 +1597,7 @@ class StatRankRow extends StatelessWidget {
                           '${formatMoney(entry.value.total)}  ${(childRatio * 100).toStringAsFixed(0)}%',
                           style: Theme.of(context).textTheme.bodySmall
                               ?.copyWith(
-                                color: const Color(0xFF65736F),
+                                color: context.appColors.onBackgroundMid,
                                 fontWeight: FontWeight.w600,
                                 letterSpacing: 0,
                               ),
@@ -1677,7 +1684,7 @@ class _CategoryDetailPageState extends State<CategoryDetailPage> {
             formatDateOnly(firstEntry.occurredAt),
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               fontWeight: FontWeight.w400,
-              color: const Color(0xFF65736F),
+              color: context.appColors.onBackgroundMid,
             ),
           ),
         ),
@@ -1706,12 +1713,12 @@ class _CategoryDetailPageState extends State<CategoryDetailPage> {
                         isLast: i == groupEntries.length - 1,
                       ),
                       if (i < groupEntries.length - 1)
-                        const Divider(
+                        Divider(
                           height: 1,
                           thickness: 1,
                           indent: 72,
                           endIndent: 0,
-                          color: Color(0xFFF5F5F5),
+                          color: context.appColors.divider,
                         ),
                     ],
                   ),
@@ -1743,7 +1750,7 @@ class _CategoryDetailPageState extends State<CategoryDetailPage> {
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w700,
                     color: widget.type == LedgerEntryType.expense
-                        ? Theme.of(context).colorScheme.error
+                        ? const Color(0xFFE2554F)
                         : const Color(0xFF1E7A39),
                   ),
                 ),
@@ -1831,7 +1838,7 @@ class _SummaryPanelState extends State<SummaryPanel> {
           Text(
             widget.title,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: Theme.of(context).colorScheme.onPrimary,
+              color: Colors.white,
             ),
           ),
           const SizedBox(height: 10),
@@ -1842,7 +1849,7 @@ class _SummaryPanelState extends State<SummaryPanel> {
               Text(
                 isHidden ? '****' : formatMoney(widget.amountInCents),
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onPrimary,
+                  color: Colors.white,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -1861,7 +1868,7 @@ class _SummaryPanelState extends State<SummaryPanel> {
                   store.isAmountHidden
                       ? Icons.visibility_off
                       : Icons.visibility,
-                  color: Theme.of(context).colorScheme.onPrimary,
+                  color: Colors.white,
                 ),
               ),
             ],
@@ -1871,7 +1878,7 @@ class _SummaryPanelState extends State<SummaryPanel> {
             Text(
               widget.subtitle!,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.78),
+                color: Colors.white.withValues(alpha: 0.78),
               ),
             ),
           ],

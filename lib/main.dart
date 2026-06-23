@@ -24,6 +24,7 @@ import 'package:ledger_app/pages/statistics_prefs.dart';
 import 'package:ledger_app/pages/account_detail_page.dart';
 import 'package:ledger_app/services/update_service.dart';
 import 'package:ledger_app/pages/account_detail_page.dart';
+import 'package:ledger_app/theme/app_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -87,109 +88,36 @@ class _LedgerAppState extends State<LedgerApp> {
   Widget build(BuildContext context) {
     return LedgerScope(
       store: _store,
-      child: AnnotatedRegion<SystemUiOverlayStyle>(
-        value: const SystemUiOverlayStyle(
-          statusBarColor: Colors.transparent,
-          statusBarIconBrightness: Brightness.dark,
-          statusBarBrightness: Brightness.light,
-        ),
-        child: MaterialApp(
-          debugShowCheckedModeBanner: false,
-          title: '波哥记账',
-          locale: const Locale('zh', 'CN'),
-          localizationsDelegates: const [
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          supportedLocales: const [Locale('zh', 'CN')],
-          theme: ThemeData(
-            fontFamily: 'NotoSansSC',
-            colorScheme: ColorScheme.fromSeed(
-              seedColor: const Color(0xFF167C80),
-              surface: const Color(0xFFF8FAF6),
+      child: ListenableBuilder(
+        listenable: _store,
+        builder: (context, _) {
+          return AnnotatedRegion<SystemUiOverlayStyle>(
+            value: const SystemUiOverlayStyle(
+              statusBarColor: Colors.transparent,
+              statusBarIconBrightness: Brightness.dark,
+              statusBarBrightness: Brightness.light,
             ),
-            scaffoldBackgroundColor: const Color(0xFFF8FAF6),
-            useMaterial3: true,
-            appBarTheme: const AppBarTheme(
-              backgroundColor: Colors.transparent,
-              surfaceTintColor: Colors.transparent,
-              systemOverlayStyle: SystemUiOverlayStyle(
-                statusBarColor: Colors.transparent,
-                statusBarIconBrightness: Brightness.dark,
-                statusBarBrightness: Brightness.light,
-              ),
-              elevation: 0,
-              titleTextStyle: TextStyle(
-                color: Color(0xFF16211F),
-                fontSize: 24,
-                fontWeight: FontWeight.w800,
-              ),
+            child: MaterialApp(
+              debugShowCheckedModeBanner: false,
+              title: '波哥记账',
+              locale: const Locale('zh', 'CN'),
+              localizationsDelegates: const [
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
+              supportedLocales: const [Locale('zh', 'CN')],
+              theme: AppTheme.light(),
+              darkTheme: AppTheme.dark(),
+              themeMode: _store.themeMode == 1
+                  ? ThemeMode.light
+                  : _store.themeMode == 2
+                      ? ThemeMode.dark
+                      : ThemeMode.system,
+              home: const LedgerHome(),
             ),
-            cardTheme: CardThemeData(
-              elevation: 0.8,
-              shadowColor: const Color(0x1A53615D),
-              color: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(28),
-              ),
-            ),
-            inputDecorationTheme: InputDecorationTheme(
-              filled: true,
-              fillColor: Colors.white,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(20),
-                borderSide: BorderSide.none,
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(20),
-                borderSide: BorderSide.none,
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(20),
-                borderSide: const BorderSide(
-                  color: Color(0x33167C80),
-                  width: 1,
-                ),
-              ),
-            ),
-            bottomSheetTheme: const BottomSheetThemeData(
-              backgroundColor: Color(0xFFF8FAF6),
-              surfaceTintColor: Colors.transparent,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
-              ),
-            ),
-            filledButtonTheme: FilledButtonThemeData(
-              style: FilledButton.styleFrom(
-                minimumSize: const Size.fromHeight(54),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(22),
-                ),
-              ),
-            ),
-            outlinedButtonTheme: OutlinedButtonThemeData(
-              style: OutlinedButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-              ),
-            ),
-            floatingActionButtonTheme: FloatingActionButtonThemeData(
-              elevation: 2,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(18),
-              ),
-            ),
-            navigationBarTheme: NavigationBarThemeData(
-              backgroundColor: Colors.transparent,
-              surfaceTintColor: Colors.transparent,
-              elevation: 0,
-              indicatorColor: const Color(0xFFC4E5E0),
-            ),
-          ),
-          home: const LedgerHome(),
-        ),
+          );
+        },
       ),
     );
   }
@@ -554,10 +482,12 @@ class _LedgerHomeState extends State<LedgerHome> with WidgetsBindingObserver {
     ];
     const titles = ['流水明细', '统计分析', '账户管理'];
 
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      extendBody: true,
-      backgroundColor: Colors.transparent,
+    return Stack(
+      children: [
+        Scaffold(
+          extendBodyBehindAppBar: true,
+          extendBody: true,
+          backgroundColor: Colors.transparent,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -591,7 +521,7 @@ class _LedgerHomeState extends State<LedgerHome> with WidgetsBindingObserver {
                       child: Text(
                         '$year年$month月  共${summary.totalEntries}笔  收入${formatMoney(summary.totalIncome)}  支出${formatMoney(summary.totalExpense)}',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: const Color(0xFF8B9A94),
+                          color: context.appColors.onBackgroundLight,
                           fontSize: 12,
                         ),
                       ),
@@ -643,14 +573,15 @@ class _LedgerHomeState extends State<LedgerHome> with WidgetsBindingObserver {
       ),
       body: Stack(
         children: [
-          // 后备底色，防止背景图加载前黑屏
+          // 后备底色
           Positioned.fill(
-            child: Container(color: const Color(0xFFF8FAF6)),
+            child: Container(color: context.appColors.background),
           ),
-          // 背景图片
-          Positioned.fill(
-            child: Image.asset('assets/Application/bg.jpg', fit: BoxFit.cover),
-          ),
+          // 背景图片（仅亮色模式显示）
+          if (Theme.of(context).brightness == Brightness.light)
+            Positioned.fill(
+              child: Image.asset('assets/Application/bg.jpg', fit: BoxFit.cover),
+            ),
           SafeArea(
             child: PageView(
               controller: _pageController,
@@ -678,13 +609,6 @@ class _LedgerHomeState extends State<LedgerHome> with WidgetsBindingObserver {
               }).toList(),
             ),
           ),
-          if (_isVoiceOverlayVisible)
-            Positioned.fill(
-              child: VoiceRecordingOverlay(
-                isCanceling: _isVoiceCanceling,
-                isVisible: _isVoiceOverlayOpaque,
-              ),
-            ),
         ],
       ),
       floatingActionButton: _index == 2
@@ -735,6 +659,12 @@ class _LedgerHomeState extends State<LedgerHome> with WidgetsBindingObserver {
                         'assets/icons/liushui.svg',
                         width: 28,
                         height: 28,
+                        colorFilter: ColorFilter.mode(
+                          Theme.of(context).brightness == Brightness.dark
+                              ? context.appColors.onBackgroundMid
+                              : const Color(0xFF65736F),
+                          BlendMode.srcIn,
+                        ),
                       ),
                     ),
                     selectedIcon: Padding(
@@ -743,34 +673,52 @@ class _LedgerHomeState extends State<LedgerHome> with WidgetsBindingObserver {
                         'assets/icons/liushui.svg',
                         width: 28,
                         height: 28,
+                        colorFilter: ColorFilter.mode(
+                          context.appColors.primary,
+                          BlendMode.srcIn,
+                        ),
                       ),
                     ),
                     label: '',
                   ),
                   NavigationDestination(
-                    icon: const Padding(
-                      padding: EdgeInsets.only(top: 4),
-                      child: Icon(Icons.bar_chart_outlined, size: 28),
+                    icon: Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Icon(
+                        Icons.bar_chart_outlined,
+                        size: 28,
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? context.appColors.onBackgroundMid
+                            : const Color(0xFF65736F),
+                      ),
                     ),
-                    selectedIcon: const Padding(
-                      padding: EdgeInsets.only(top: 4),
-                      child: Icon(Icons.bar_chart, size: 28),
+                    selectedIcon: Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Icon(
+                        Icons.bar_chart,
+                        size: 28,
+                        color: context.appColors.primary,
+                      ),
                     ),
                     label: '',
                   ),
                   NavigationDestination(
-                    icon: const Padding(
-                      padding: EdgeInsets.only(top: 4),
+                    icon: Padding(
+                      padding: const EdgeInsets.only(top: 4),
                       child: Icon(
                         Icons.account_balance_wallet_outlined,
                         size: 28,
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? context.appColors.onBackgroundMid
+                            : const Color(0xFF65736F),
                       ),
                     ),
-                    selectedIcon: const Padding(
-                      padding: EdgeInsets.only(top: 4),
+                    selectedIcon: Padding(
+                      padding: const EdgeInsets.only(top: 4),
                       child: Icon(
                         Icons.account_balance_wallet_outlined,
                         size: 28,
+                        color: context.appColors.primary,
                       ),
                     ),
                     label: '',
@@ -781,6 +729,15 @@ class _LedgerHomeState extends State<LedgerHome> with WidgetsBindingObserver {
           ),
         ),
       ),
+      ),
+      if (_isVoiceOverlayVisible)
+        Positioned.fill(
+          child: VoiceRecordingOverlay(
+            isCanceling: _isVoiceCanceling,
+            isVisible: _isVoiceOverlayOpaque,
+          ),
+        ),
+      ],
     );
   }
 
@@ -945,7 +902,7 @@ class _AccountsPageState extends State<AccountsPage> {
     final chartData = _computeTotalAssetBalance(store);
 
     return Container(
-      decoration: BoxDecoration(color: Colors.white.withOpacity(0.0)),
+      decoration: const BoxDecoration(color: Colors.transparent),
       child: ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
         children: [
@@ -958,6 +915,14 @@ class _AccountsPageState extends State<AccountsPage> {
           const SizedBox(height: 16),
           FilledButton.icon(
             onPressed: () => showAccountSheet(context),
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(context).brightness == Brightness.dark
+                  ? const Color(0xFF167C80)
+                  : null,
+              foregroundColor: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : null,
+            ),
             icon: const Icon(Icons.add),
             label: const Text('添加账户'),
           ),
@@ -1009,10 +974,10 @@ class _AccountsPageState extends State<AccountsPage> {
             padding: const EdgeInsets.only(top: 16, bottom: 8),
             child: Text(
               type.label,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF65736F),
+                color: context.appColors.onBackgroundMid,
               ),
             ),
           ),
@@ -1219,7 +1184,7 @@ class _LedgerPageState extends State<LedgerPage> {
     );
 
     return Container(
-      decoration: BoxDecoration(color: Colors.white.withOpacity(0.0)),
+      decoration: const BoxDecoration(color: Colors.transparent),
       child: ListView(
         controller: _scrollController,
         padding: const EdgeInsets.only(top: 12, bottom: 112),

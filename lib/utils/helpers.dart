@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import 'package:ledger_app/theme/app_theme.dart';
+
 import 'package:ledger_app/models/category.dart';
 import 'package:ledger_app/models/enums.dart';
 import 'package:ledger_app/models/ledger_entry.dart';
@@ -220,7 +222,7 @@ Future<void> confirmDelete(
     builder: (context) {
       return Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        backgroundColor: Colors.white,
+        backgroundColor: context.appColors.dialogBackground,
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(
@@ -231,7 +233,7 @@ Future<void> confirmDelete(
                 title,
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.w800,
-                  color: const Color(0xFF16211F),
+                  color: context.appColors.onBackground,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -239,7 +241,7 @@ Future<void> confirmDelete(
               Text(
                 message,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: const Color(0xFF65736F),
+                  color: context.appColors.onBackgroundMid,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -248,6 +250,7 @@ Future<void> confirmDelete(
                 onPressed: () => Navigator.of(context).pop(true),
                 style: FilledButton.styleFrom(
                   backgroundColor: const Color(0xFFE53935),
+                  foregroundColor: Colors.white,
                   minimumSize: const Size(double.infinity, 50),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),

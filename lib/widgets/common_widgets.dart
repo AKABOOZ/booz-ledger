@@ -47,13 +47,13 @@ class AccountIconBadge extends StatelessWidget {
         height: size,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: const Color(0xFF1677FF),
+          color: const Color(0xFF1677FF).withValues(alpha: 0.13),
           borderRadius: BorderRadius.circular(size * 0.38),
         ),
         child: Text(
           '支',
           style: TextStyle(
-            color: Colors.white,
+            color: const Color(0xFF1677FF),
             fontSize: size * 0.48,
             fontWeight: FontWeight.w900,
           ),
@@ -140,7 +140,7 @@ class LedgerEntryTile extends StatelessWidget {
     final isExpense = entry.type == LedgerEntryType.expense;
     final amountPrefix = isExpense ? '-' : '+';
     final amountColor = isExpense
-        ? Theme.of(context).colorScheme.error
+        ? const Color(0xFFE2554F)
         : const Color(0xFF1E7A39);
 
     final title = switch (entry.type) {

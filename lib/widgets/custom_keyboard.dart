@@ -20,8 +20,6 @@ class CustomKeyboard extends StatelessWidget {
   // ── Design tokens ──────────────────────────────────
   static const _teal = Color(0xFF00696D);
   static const _confirmDark = Color(0xFF004C4F);
-  static const _keyBg = Color(0xFFFFFFFF);
-  static const _keyText = Color(0xFF000000);
   static const _deleteIcon = Color(0xFF333333);
   static const _pressedBg = Color(0xFFB6BDC5);
   static const _unselectedText = Color(0xFF666666);
@@ -55,7 +53,7 @@ class CustomKeyboard extends StatelessWidget {
                 top: 0,
                 bottom: 0,
                 width: _sidebarW,
-                child: _buildSidebar(),
+                child: _buildSidebar(context),
               ),
               // ── Number pad (center) ──
               Positioned(
@@ -63,7 +61,7 @@ class CustomKeyboard extends StatelessWidget {
                 right: _operatorW + _gap,
                 top: 0,
                 bottom: 0,
-                child: _buildNumberPad(),
+                child: _buildNumberPad(context),
               ),
               // ── Operator column (right) ──
               Positioned(
@@ -71,7 +69,7 @@ class CustomKeyboard extends StatelessWidget {
                 top: 0,
                 bottom: 0,
                 width: _operatorW,
-                child: _buildOperatorColumn(contentH),
+                child: _buildOperatorColumn(context, contentH),
               ),
             ],
           ),
@@ -81,24 +79,24 @@ class CustomKeyboard extends StatelessWidget {
   }
 
   // ── Sidebar ────────────────────────────────────────
-  Widget _buildSidebar() {
+  Widget _buildSidebar(BuildContext context) {
     return Material(
-      color: _keyBg,
+      color: Theme.of(context).colorScheme.surface,
       borderRadius: BorderRadius.circular(_radius),
       elevation: 0.5,
       child: Column(
         children: [
-          _buildTypeButton('支\n出', LedgerEntryType.expense),
+          _buildTypeButton(context, '支\n出', LedgerEntryType.expense),
           const SizedBox(height: 4),
-          _buildTypeButton('收\n入', LedgerEntryType.income),
+          _buildTypeButton(context, '收\n入', LedgerEntryType.income),
           const SizedBox(height: 4),
-          _buildTypeButton('转\n账', LedgerEntryType.transfer),
+          _buildTypeButton(context, '转\n账', LedgerEntryType.transfer),
         ],
       ),
     );
   }
 
-  Widget _buildTypeButton(String label, LedgerEntryType type) {
+  Widget _buildTypeButton(BuildContext context, String label, LedgerEntryType type) {
     final isSelected = currentType == type;
     return Expanded(
       child: GestureDetector(
@@ -122,53 +120,53 @@ class CustomKeyboard extends StatelessWidget {
   }
 
   // ── Number pad ─────────────────────────────────────
-  Widget _buildNumberPad() {
+  Widget _buildNumberPad(BuildContext context) {
     return Column(
       children: [
-        _buildKeyRow(['7', '8', '9']),
+        _buildKeyRow(context, ['7', '8', '9']),
         SizedBox(height: _gap),
-        _buildKeyRow(['4', '5', '6']),
+        _buildKeyRow(context, ['4', '5', '6']),
         SizedBox(height: _gap),
-        _buildKeyRow(['1', '2', '3']),
+        _buildKeyRow(context, ['1', '2', '3']),
         SizedBox(height: _gap),
-        _buildBottomRow(),
+        _buildBottomRow(context),
       ],
     );
   }
 
-  Widget _buildKeyRow(List<String> keys) {
+  Widget _buildKeyRow(BuildContext context, List<String> keys) {
     return SizedBox(
       height: _rowH,
       child: Row(
         children: [
           for (var i = 0; i < keys.length; i++) ...[
             if (i > 0) SizedBox(width: _gap),
-            Expanded(child: _buildKey(keys[i])),
+            Expanded(child: _buildKey(context, keys[i])),
           ],
         ],
       ),
     );
   }
 
-  Widget _buildBottomRow() {
+  Widget _buildBottomRow(BuildContext context) {
     return SizedBox(
       height: _rowH,
       child: Row(
         children: [
-          Expanded(child: _buildKey('.')),
+          Expanded(child: _buildKey(context, '.')),
           SizedBox(width: _gap),
-          Expanded(child: _buildKey('0')),
+          Expanded(child: _buildKey(context, '0')),
           SizedBox(width: _gap),
-          Expanded(child: _buildDeleteKey()),
+          Expanded(child: _buildDeleteKey(context)),
         ],
       ),
     );
   }
 
   // ── Single key ─────────────────────────────────────
-  Widget _buildKey(String label) {
+  Widget _buildKey(BuildContext context, String label) {
     return Material(
-      color: _keyBg,
+      color: Theme.of(context).colorScheme.surface,
       borderRadius: BorderRadius.circular(_radius),
       elevation: 0.5,
       child: InkWell(
@@ -179,10 +177,10 @@ class CustomKeyboard extends StatelessWidget {
         child: Center(
           child: Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w600,
-              color: _keyText,
+              color: Theme.of(context).colorScheme.onSurface,
               decoration: TextDecoration.none,
             ),
           ),
@@ -191,9 +189,9 @@ class CustomKeyboard extends StatelessWidget {
     );
   }
 
-  Widget _buildDeleteKey() {
+  Widget _buildDeleteKey(BuildContext context) {
     return Material(
-      color: _keyBg,
+      color: Theme.of(context).colorScheme.surface,
       borderRadius: BorderRadius.circular(_radius),
       elevation: 0.5,
       child: InkWell(
@@ -213,7 +211,7 @@ class CustomKeyboard extends StatelessWidget {
   }
 
   // ── Operator column (precise Y positioning) ────────
-  Widget _buildOperatorColumn(double totalH) {
+  Widget _buildOperatorColumn(BuildContext context, double totalH) {
     // Y positions matching number pad rows:
     // Row 1 (-):  y = 0
     // Row 2 (+):  y = rowH + gap = 64
@@ -229,14 +227,14 @@ class CustomKeyboard extends StatelessWidget {
           right: 0,
           top: 0,
           height: _rowH,
-          child: _buildOperatorButton('-'),
+          child: _buildOperatorButton(context, '-'),
         ),
         Positioned(
           left: 0,
           right: 0,
           top: row2Y,
           height: _rowH,
-          child: _buildOperatorButton('+'),
+          child: _buildOperatorButton(context, '+'),
         ),
         Positioned(
           left: 0,
@@ -249,9 +247,9 @@ class CustomKeyboard extends StatelessWidget {
     );
   }
 
-  Widget _buildOperatorButton(String label) {
+  Widget _buildOperatorButton(BuildContext context, String label) {
     return Material(
-      color: _keyBg,
+      color: Theme.of(context).colorScheme.surface,
       borderRadius: BorderRadius.circular(_radius),
       elevation: 0.5,
       child: InkWell(

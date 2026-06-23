@@ -10,6 +10,7 @@ import 'package:ledger_app/services/import_helpers.dart';
 import 'package:ledger_app/services/update_service.dart';
 import 'package:ledger_app/store/ledger_store.dart';
 import 'package:ledger_app/utils/helpers.dart';
+import 'package:ledger_app/theme/app_theme.dart';
 
 
 class SettingsPage extends StatefulWidget {
@@ -103,9 +104,58 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Widget _buildMainPage() {
     final store = LedgerScope.of(context);
+    final colors = context.appColors;
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
+        // 外观模式切换
+        Card(
+          child: InkWell(
+            onTap: () => _showThemeModePicker(store),
+            borderRadius: BorderRadius.circular(28),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: colors.primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Icon(Icons.dark_mode_outlined, color: colors.primary, size: 28),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '外观模式',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: colors.onBackground,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          _themeModeLabel(store.themeMode),
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: colors.onBackgroundMid,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(Icons.chevron_right, color: colors.onBackgroundMid),
+                ],
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
         _buildSettingCard(
           icon: Icons.mic,
           title: '语音识别',
@@ -186,6 +236,7 @@ class _SettingsPageState extends State<SettingsPage> {
     required String description,
     required VoidCallback onTap,
   }) {
+    final colors = context.appColors;
     return Card(
       child: InkWell(
         onTap: onTap,
@@ -197,10 +248,10 @@ class _SettingsPageState extends State<SettingsPage> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF167C80).withOpacity(0.1),
+                  color: colors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: Icon(icon, color: const Color(0xFF167C80), size: 28),
+                child: Icon(icon, color: colors.primary, size: 28),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -209,24 +260,24 @@ class _SettingsPageState extends State<SettingsPage> {
                   children: [
                     Text(
                       title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF16211F),
+                        color: colors.onBackground,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       description,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
-                        color: Color(0xFF65736F),
+                        color: colors.onBackgroundMid,
                       ),
                     ),
                   ],
                 ),
               ),
-              const Icon(Icons.chevron_right, color: Color(0xFF65736F)),
+              Icon(Icons.chevron_right, color: colors.onBackgroundMid),
             ],
           ),
         ),
@@ -235,22 +286,75 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Widget _buildInfoRow(String label, String value) {
+    final colors = context.appColors;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
           label,
-          style: const TextStyle(fontSize: 16, color: Color(0xFF65736F)),
+          style: TextStyle(fontSize: 16, color: colors.onBackgroundMid),
         ),
         Text(
           value,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w500,
-            color: Color(0xFF16211F),
+            color: colors.onBackground,
           ),
         ),
       ],
+    );
+  }
+
+  String _themeModeLabel(int mode) {
+    return switch (mode) {
+      1 => '浅色模式',
+      2 => '深色模式',
+      _ => '跟随系统',
+    };
+  }
+
+  void _showThemeModePicker(LedgerStore store) {
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  '外观模式',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+              _buildThemeOption(store, '跟随系统', 0, Icons.brightness_auto),
+              _buildThemeOption(store, '浅色模式', 1, Icons.light_mode),
+              _buildThemeOption(store, '深色模式', 2, Icons.dark_mode),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildThemeOption(LedgerStore store, String label, int value, IconData icon) {
+    final isSelected = store.themeMode == value;
+    final colors = context.appColors;
+    return ListTile(
+      leading: Icon(icon, color: isSelected ? colors.primary : colors.onBackgroundMid),
+      title: Text(label),
+      trailing: isSelected
+          ? Icon(Icons.check, color: colors.primary)
+          : null,
+      onTap: () async {
+        await store.setThemeMode(value);
+        if (mounted) Navigator.of(context).pop();
+      },
     );
   }
 
@@ -345,7 +449,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     const SizedBox(height: 8),
                     Text(
                       '${selectedProvider.providerSummary}\n图片识别仍然会先走百度OCR，再交给当前服务商做理解。',
-                      style: const TextStyle(color: Color(0xFF65736F)),
+                      style: TextStyle(color: context.appColors.onBackgroundMid),
                     ),
                     const SizedBox(height: 16),
                     SwitchListTile(
@@ -371,7 +475,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       width: double.infinity,
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF2F7F7),
+                        color: context.appColors.surfaceAlt,
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Column(
@@ -379,20 +483,20 @@ class _SettingsPageState extends State<SettingsPage> {
                         children: [
                           Text(
                             '当前服务商：${selectedProvider.label}',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontWeight: FontWeight.w700,
-                              color: Color(0xFF16211F),
+                              color: context.appColors.onBackground,
                             ),
                           ),
                           const SizedBox(height: 6),
                           Text(
                             '当前模型：${activeModel.isEmpty ? selectedProvider.model : activeModel}',
-                            style: const TextStyle(color: Color(0xFF65736F)),
+                            style: TextStyle(color: context.appColors.onBackgroundMid),
                           ),
                           const SizedBox(height: 4),
                           Text(
                             '语音AI增强：${store.isVoiceAiEnabled ? '已开启' : '已关闭'}',
-                            style: const TextStyle(color: Color(0xFF65736F)),
+                            style: TextStyle(color: context.appColors.onBackgroundMid),
                           ),
                         ],
                       ),
@@ -474,9 +578,9 @@ class _SettingsPageState extends State<SettingsPage> {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    const Text(
+                    Text(
                       '提示：当前只展示正在生效的服务商配置；切换服务商后，输入框会自动切到对应的模型和 API Key。语音AI增强关闭时，语音仍会按原来的本地规则解析。',
-                      style: TextStyle(fontSize: 12, color: Color(0xFF65736F)),
+                      style: TextStyle(fontSize: 12, color: context.appColors.onBackgroundMid),
                     ),
                   ],
                 ),
@@ -681,7 +785,7 @@ class _SettingsPageState extends State<SettingsPage> {
                           width: double.infinity,
                           padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF6FAF8),
+                            color: context.appColors.surfaceAlt,
                             borderRadius: BorderRadius.circular(18),
                           ),
                           child: Row(
@@ -729,7 +833,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                         fontSize: 13.5,
                                         fontWeight: FontWeight.w700,
                                         color: store.lastSyncTime == null
-                                            ? const Color(0xFF8E9A96)
+                                            ? context.appColors.onBackgroundLight
                                             : (store.lastSyncSuccess == true
                                                   ? const Color(0xFF2E8B57)
                                                   : const Color(0xFFC95858)),

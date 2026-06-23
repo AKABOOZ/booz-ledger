@@ -11,6 +11,7 @@ import 'package:ledger_app/pages/entry_form_page.dart';
 import 'package:ledger_app/pages/search_page.dart';
 import 'package:ledger_app/store/ledger_store.dart';
 import 'package:ledger_app/utils/helpers.dart';
+import 'package:ledger_app/theme/app_theme.dart';
 import 'package:ledger_app/widgets/common_widgets.dart';
 
 class AccountDetailPage extends StatefulWidget {
@@ -72,7 +73,7 @@ class _AccountDetailPageState extends State<AccountDetailPage> {
           ),
         ],
       ),
-      backgroundColor: const Color(0xFFF8FAF6),
+      backgroundColor: context.appColors.background,
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
         children: [
@@ -119,7 +120,7 @@ class _AccountDetailPageState extends State<AccountDetailPage> {
                 width: 36,
                 height: 36,
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: context.appColors.surface,
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Center(
@@ -263,10 +264,10 @@ class _AccountDetailPageState extends State<AccountDetailPage> {
   ) {
     if (entries.isEmpty) {
       return [
-        const Padding(
-          padding: EdgeInsets.symmetric(vertical: 32),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 32),
           child: Center(
-            child: Text('暂无流水记录', style: TextStyle(color: Color(0xFF999999))),
+            child: Text('暂无流水记录', style: TextStyle(color: context.appColors.onBackgroundMid)),
           ),
         ),
       ];
@@ -281,10 +282,10 @@ class _AccountDetailPageState extends State<AccountDetailPage> {
           padding: const EdgeInsets.only(top: 16, bottom: 8),
           child: Text(
             group.key,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF999999),
+              color: context.appColors.onBackgroundMid,
             ),
           ),
         ),
@@ -321,12 +322,12 @@ class _AccountDetailPageState extends State<AccountDetailPage> {
                       },
                     ),
                     if (i < group.value.length - 1)
-                      const Divider(
+                      Divider(
                         height: 1,
                         thickness: 1,
                         indent: 72,
                         endIndent: 0,
-                        color: Color(0xFFF5F5F5),
+                        color: context.appColors.divider,
                       ),
                   ],
                 ),

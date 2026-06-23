@@ -10,6 +10,7 @@ import 'package:ledger_app/models/ledger_entry.dart';
 import 'package:ledger_app/pages/entry_form_page.dart';
 import 'package:ledger_app/pages/statistics_page.dart';
 import 'package:ledger_app/store/ledger_store.dart';
+import 'package:ledger_app/theme/app_theme.dart';
 import 'package:ledger_app/utils/helpers.dart';
 import 'package:ledger_app/widgets/common_widgets.dart';
 
@@ -194,12 +195,15 @@ class _LedgerSearchPageState extends State<LedgerSearchPage> {
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      backgroundColor: const Color(0xFFF8FAF6),
+      backgroundColor: Theme.of(context).brightness == Brightness.dark
+          ? context.appColors.background
+          : Colors.transparent,
       body: Stack(
         children: [
-          Positioned.fill(
-            child: Image.asset('assets/Application/bg.jpg', fit: BoxFit.cover),
-          ),
+          if (Theme.of(context).brightness == Brightness.light)
+            Positioned.fill(
+              child: Image.asset('assets/Application/bg.jpg', fit: BoxFit.cover),
+            ),
           SafeArea(
             child: Column(
               children: [
@@ -211,7 +215,7 @@ class _LedgerSearchPageState extends State<LedgerSearchPage> {
                         child: Container(
                           height: 44,
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: context.appColors.surface,
                             borderRadius: BorderRadius.circular(22),
                             boxShadow: const [
                               BoxShadow(
@@ -229,8 +233,8 @@ class _LedgerSearchPageState extends State<LedgerSearchPage> {
                             textInputAction: TextInputAction.search,
                             decoration: InputDecoration(
                               hintText: '搜索金额或备注',
-                              hintStyle: const TextStyle(
-                                color: Color(0xFF9AA6A1),
+                              hintStyle: TextStyle(
+                                color: context.appColors.hint,
                                 fontWeight: FontWeight.w500,
                               ),
                               prefixIcon: const Icon(Icons.search),
@@ -277,7 +281,7 @@ class _LedgerSearchPageState extends State<LedgerSearchPage> {
                             ),
                             minimumSize: const Size(92, 44),
                             tapTargetSize: MaterialTapTargetSize.padded,
-                            foregroundColor: const Color(0xFF167C80),
+                            foregroundColor: context.appColors.primary,
                           ),
                           icon: const Icon(Icons.tune, size: 18),
                           label: Text(hasActiveFilters ? '调整筛选' : '高级筛选'),
@@ -581,8 +585,8 @@ class _LedgerSearchPageState extends State<LedgerSearchPage> {
 
             return Container(
               height: MediaQuery.sizeOf(context).height * 0.84,
-              decoration: const BoxDecoration(
-                color: Color(0xFFF8FAF6),
+              decoration: BoxDecoration(
+                color: context.appColors.background,
                 borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
               ),
               child: SafeArea(
@@ -779,8 +783,8 @@ class _LedgerSearchPageState extends State<LedgerSearchPage> {
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(22),
                                 ),
-                                side: const BorderSide(
-                                  color: Color(0xFFB6C4BE),
+                                side: BorderSide(
+                                  color: context.appColors.outline,
                                 ),
                               ),
                               child: const Text('重置'),
@@ -825,14 +829,14 @@ class _FilterSummaryChip extends StatelessWidget {
     final content = Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: const Color(0xFFE0F2EF),
+        color: context.appColors.surfaceDim,
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: const Color(0x33069B9B)),
+        border: Border.all(color: context.appColors.primary.withValues(alpha: 0.2)),
       ),
       child: Text(
         label,
         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-          color: const Color(0xFF167C80),
+          color: context.appColors.primary,
           fontWeight: FontWeight.w700,
         ),
       ),
@@ -864,7 +868,7 @@ class _FilterBlockActionButton extends StatelessWidget {
         minimumSize: Size.zero,
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         alignment: Alignment.centerRight,
-        foregroundColor: const Color(0xFF167C80),
+        foregroundColor: context.appColors.primary,
         textStyle: const TextStyle(fontWeight: FontWeight.w700),
       ),
       child: Text(label, textAlign: TextAlign.right),
@@ -882,13 +886,13 @@ class _CountBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: const Color(0xFFEFF4F1),
+        color: context.appColors.surfaceAlt,
         borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
         '共$count笔',
         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-          color: const Color(0xFF65736F),
+          color: context.appColors.onBackgroundMid,
           fontWeight: FontWeight.w800,
           fontSize: 11,
           letterSpacing: 0,
@@ -923,15 +927,15 @@ class _FilterPill extends StatelessWidget {
           vertical: 9,
         ),
         decoration: BoxDecoration(
-          color: selected ? const Color(0xFFE0F2EF) : Colors.white,
+          color: selected ? context.appColors.surfaceDim : context.appColors.surface,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
-            color: selected ? const Color(0xFF069B9B) : const Color(0xFFE1E8E4),
+            color: selected ? context.appColors.primary : context.appColors.outline,
           ),
         ),
         child: DefaultTextStyle.merge(
           style: TextStyle(
-            color: selected ? const Color(0xFF167C80) : const Color(0xFF65736F),
+            color: selected ? context.appColors.primary : context.appColors.onBackgroundMid,
             fontWeight: FontWeight.w800,
             letterSpacing: 0,
           ),
@@ -971,12 +975,12 @@ class _AccountFilterRow extends StatelessWidget {
                 width: 34,
                 height: 34,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE0F2EF),
+                  color: context.appColors.surfaceDim,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
                   Icons.account_balance_wallet_rounded,
-                  color: const Color(0xFF167C80),
+                  color: context.appColors.primary,
                   size: 18,
                 ),
               ),
@@ -988,7 +992,7 @@ class _AccountFilterRow extends StatelessWidget {
                   Text(
                     title,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: const Color(0xFF33413D),
+                      color: context.appColors.onBackground,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
@@ -1053,10 +1057,10 @@ class _ExpandableFilterTileState extends State<_ExpandableFilterTile> {
                 AnimatedRotation(
                   turns: _expanded ? 0.25 : 0,
                   duration: const Duration(milliseconds: 160),
-                  child: const Icon(
+                  child: Icon(
                     Icons.chevron_right_rounded,
                     size: 22,
-                    color: Color(0xFF65736F),
+                    color: context.appColors.onBackgroundMid,
                   ),
                 ),
                 const SizedBox(width: 2),
@@ -1066,7 +1070,7 @@ class _ExpandableFilterTileState extends State<_ExpandableFilterTile> {
                   child: Text(
                     widget.title,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: const Color(0xFF33413D),
+                      color: context.appColors.onBackground,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
@@ -1074,7 +1078,7 @@ class _ExpandableFilterTileState extends State<_ExpandableFilterTile> {
                 Text(
                   widget.countText,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: const Color(0xFF8B9A94),
+                    color: context.appColors.onBackgroundLight,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -1127,12 +1131,12 @@ class _AccountFilterGroup extends StatelessWidget {
         width: 34,
         height: 34,
         decoration: BoxDecoration(
-          color: const Color(0xFFE0F2EF),
+          color: context.appColors.surfaceDim,
           borderRadius: BorderRadius.circular(12),
         ),
-        child: const Icon(
+        child: Icon(
           Icons.account_balance_wallet_rounded,
-          color: Color(0xFF167C80),
+          color: context.appColors.primary,
           size: 18,
         ),
       ),
@@ -1176,7 +1180,7 @@ class _FilterBlock extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 14),
       padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.appColors.surface,
         borderRadius: BorderRadius.circular(22),
         boxShadow: const [
           BoxShadow(
@@ -1197,7 +1201,7 @@ class _FilterBlock extends StatelessWidget {
                   title,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w800,
-                    color: const Color(0xFF16211F),
+                    color: context.appColors.onBackground,
                   ),
                 ),
               ),
@@ -1228,10 +1232,10 @@ class _DateRangeButton extends StatelessWidget {
       onPressed: onTap,
       style: OutlinedButton.styleFrom(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-        foregroundColor: const Color(0xFF33413D),
-        side: const BorderSide(color: Color(0xFFE1E8E4)),
+        foregroundColor: context.appColors.onBackground,
+        side: BorderSide(color: context.appColors.outline),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        backgroundColor: Colors.white,
+        backgroundColor: context.appColors.surface,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -1295,7 +1299,7 @@ class _CategoryFilterList extends StatelessWidget {
           selectedKeys: selectedKeys,
           onChanged: onChanged,
         ),
-        const Divider(height: 22, color: Color(0xFFE6ECE9)),
+        Divider(height: 22, color: context.appColors.divider),
         _CategoryTypeFilterGroup(
           title: '收入',
           icon: Icons.savings_rounded,
@@ -1367,10 +1371,10 @@ class _CategoryTypeFilterGroup extends StatelessWidget {
         width: 30,
         height: 30,
         decoration: BoxDecoration(
-          color: const Color(0xFFE0F2EF),
+          color: context.appColors.surfaceDim,
           borderRadius: BorderRadius.circular(10),
         ),
-        child: Icon(icon, size: 18, color: const Color(0xFF167C80)),
+        child: Icon(icon, size: 18, color: context.appColors.primary),
       ),
       title: title,
       countText: '$selectedCount/$totalCount',
@@ -1455,7 +1459,7 @@ class _CategoryMajorFilterTile extends StatelessWidget {
                   child: Text(
                     item.name,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: const Color(0xFF33413D),
+                      color: context.appColors.onBackground,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -1551,14 +1555,14 @@ class _LedgerSearchEmptyState extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 38, color: const Color(0xFF8B9A94)),
+          Icon(icon, size: 38, color: context.appColors.onBackgroundLight),
           if (title != null) ...[
             const SizedBox(height: 14),
             Text(
               title!,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w700,
-                color: const Color(0xFF16211F),
+                color: context.appColors.onBackground,
               ),
             ),
             const SizedBox(height: 6),
@@ -1569,7 +1573,7 @@ class _LedgerSearchEmptyState extends StatelessWidget {
             textAlign: TextAlign.center,
             style: Theme.of(
               context,
-            ).textTheme.bodyMedium?.copyWith(color: const Color(0xFF65736F)),
+            ).textTheme.bodyMedium?.copyWith(color: context.appColors.onBackgroundMid),
           ),
         ],
       ),
@@ -1590,13 +1594,13 @@ class _SearchResultsOverviewCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final totals = StatsTotals.fromEntries(entries);
     final netColor = totals.net >= 0
-        ? const Color(0xFF167C80)
+        ? context.appColors.primary
         : const Color(0xFFE2554F);
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.9),
+        color: context.appColors.surface.withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE2EAE6)),
+        border: Border.all(color: context.appColors.outline),
         boxShadow: const [
           BoxShadow(
             color: Color(0x0F53615D),
@@ -1615,7 +1619,7 @@ class _SearchResultsOverviewCard extends StatelessWidget {
                 Text(
                   '筛选结果',
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    color: const Color(0xFF16211F),
+                    color: context.appColors.onBackground,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 0,
                   ),
@@ -1655,9 +1659,9 @@ class _SearchResultsOverviewCard extends StatelessWidget {
               ],
             ),
           ),
-          const Padding(
+          Padding(
             padding: EdgeInsets.only(left: 14),
-            child: Divider(height: 1, thickness: 1, color: Color(0xFFE6ECE9)),
+            child: Divider(height: 1, thickness: 1, color: context.appColors.divider),
           ),
           Material(
             type: MaterialType.transparency,
@@ -1676,16 +1680,16 @@ class _SearchResultsOverviewCard extends StatelessWidget {
                     Text(
                       '查看统计',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: const Color(0xFF2F3A37),
+                        color: context.appColors.onBackground,
                         fontWeight: FontWeight.w800,
                         letterSpacing: 0,
                       ),
                     ),
                     const Spacer(),
-                    const Icon(
+                    Icon(
                       Icons.chevron_right_rounded,
                       size: 24,
-                      color: Color(0xFF2F3A37),
+                      color: context.appColors.onBackground,
                     ),
                   ],
                 ),
@@ -1794,9 +1798,10 @@ class _FilteredStatisticsPageState extends State<FilteredStatisticsPage> {
       appBar: AppBar(title: const Text('筛选统计')),
       body: Stack(
         children: [
-          Positioned.fill(
-            child: Image.asset('assets/Application/bg.jpg', fit: BoxFit.cover),
-          ),
+          if (Theme.of(context).brightness == Brightness.light)
+            Positioned.fill(
+              child: Image.asset('assets/Application/bg.jpg', fit: BoxFit.cover),
+            ),
           SafeArea(
             top: false,
             child: ListView(
@@ -1874,7 +1879,7 @@ class _FilteredStatisticsSummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final netColor = totals.net >= 0
-        ? const Color(0xFF167C80)
+        ? context.appColors.primary
         : const Color(0xFFE2554F);
     final summaryLabels = filterSummary.isEmpty
         ? const ['全部流水']
@@ -1882,7 +1887,7 @@ class _FilteredStatisticsSummaryCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.appColors.surface,
         borderRadius: BorderRadius.circular(20),
         boxShadow: const [
           BoxShadow(
@@ -2019,7 +2024,7 @@ List<Widget> buildLedgerEntryGroupSections(
             formatDateOnly(firstEntry.occurredAt),
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               fontWeight: FontWeight.w400,
-              color: const Color(0xFF65736F),
+              color: context.appColors.onBackgroundMid,
             ),
           ),
         ),
@@ -2044,12 +2049,12 @@ List<Widget> buildLedgerEntryGroupSections(
                         isLast: i == groupEntries.length - 1,
                       ),
                       if (i < groupEntries.length - 1)
-                        const Divider(
+                        Divider(
                           height: 1,
                           thickness: 1,
                           indent: 72,
                           endIndent: 0,
-                          color: Color(0xFFF5F5F5),
+                          color: context.appColors.divider,
                         ),
                     ],
                   ),

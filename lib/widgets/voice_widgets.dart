@@ -296,9 +296,10 @@ class _HomeVoiceFabState extends State<HomeVoiceFab> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final color = widget.isCanceling
         ? const Color(0xFFEF3B3D)
-        : const Color(0xFF069B9B);
+        : (isDark ? const Color(0xFF2B9E96) : const Color(0xFF069B9B));
     const size = 56.0;
     return Listener(
       behavior: HitTestBehavior.opaque,
@@ -373,7 +374,7 @@ class VoiceRecordingOverlay extends StatelessWidget {
         : const Color(0xFF069B9B);
     final textColor = isCanceling
         ? const Color(0xFFE5444D)
-        : const Color(0xFF111817);
+        : Colors.white;
     return AbsorbPointer(
       child: AnimatedOpacity(
         opacity: isVisible ? 1 : 0,
@@ -387,7 +388,9 @@ class VoiceRecordingOverlay extends StatelessWidget {
               children: [
                 Positioned.fill(
                   child: Image.asset(
-                    'assets/Application/gaosibg.jpg',
+                    Theme.of(context).brightness == Brightness.dark
+                        ? 'assets/Application/dark.jpg'
+                        : 'assets/Application/gaosibg.jpg',
                     fit: BoxFit.cover,
                   ),
                 ),
