@@ -1736,9 +1736,11 @@ class _EntryFormPageState extends State<EntryFormPage> {
       }
 
       if (key == '.') {
+        // 只有当当前数字段还没有小数点时才允许输入
+        final lastSegment = _expression.split(RegExp(r'[+-]')).last;
         if (_expression.isEmpty || _expression.endsWith('+') || _expression.endsWith('-')) {
           _expression += '0.';
-        } else if (!_expression.contains('.') || _expression.split(RegExp(r'[+-]')).last.isEmpty) {
+        } else if (!lastSegment.contains('.')) {
           _expression += '.';
         }
         return;
@@ -2131,7 +2133,7 @@ class _AmountInputState extends State<AmountInput> {
             if (widget.expression.isNotEmpty && !widget.isCalculated && (widget.expression.contains('+') || widget.expression.contains('-')))
               Positioned(
                 left: 56,
-                bottom: 14,
+                bottom: 6,
                 child: Text(
                   widget.expression,
                   style: const TextStyle(

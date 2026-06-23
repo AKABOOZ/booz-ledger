@@ -518,7 +518,7 @@ class BalanceLineChartPainter extends CustomPainter {
     // value 是分（整数），先转换为元
     final yuan = value / 100.0;
     if (yuan >= 10000) {
-      return '${(yuan / 10000).toStringAsFixed(1)}万';
+      return '${(yuan / 10000).toStringAsFixed(1)}W';
     } else if (yuan >= 1000) {
       return '${(yuan / 1000).toStringAsFixed(1)}K';
     }
