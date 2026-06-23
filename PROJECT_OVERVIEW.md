@@ -39,6 +39,10 @@
   - 百度语音识别：语音转文本
   - 百度 OCR：图片文字识别
   - DeepSeek / 通义千问：基于 OCR 文本理解金额、分类、账户、备注等，并回填表单
+- 主题与外观
+  - 深色/浅色模式切换（支持跟随系统）
+  - 自定义 ThemeExtension 语义色系统（AppColors）
+  - 深色模式下自动隐藏背景图，使用纯色背景
 
 ## 2. 整体架构
 
@@ -55,6 +59,7 @@
 - UI 层：
   - 几乎全部界面都在 [lib/main.dart](/Users/akabooz/Documents/记账APP_副本/lib/main.dart) 中
   - 使用 `MaterialApp` + 多个 `StatefulWidget` / `StatelessWidget`
+  - 主题系统：`lib/theme/app_theme.dart` 定义 `AppColors` ThemeExtension，提供亮色/暗色双方案
 - 状态与数据层：
   - `LedgerStore extends ChangeNotifier`
   - 负责加载 / 保存数据、账户余额计算、备份同步、导入导出
@@ -137,6 +142,8 @@
   - 服务层：AI、语音、OCR、文本解析、更新检测
 - [lib/pages](/Users/akabooz/Documents/记账APP_副本/lib/pages)
   - 页面：统计、设置、搜索、记账表单
+- [lib/theme](/Users/akabooz/Documents/记账APP_副本/lib/theme)
+  - 主题系统：AppColors ThemeExtension，亮色/暗色双 ThemeData
 - [assets](/Users/akabooz/Documents/记账APP_副本/assets)
   - 图标、背景图、字体资源
 - [android](/Users/akabooz/Documents/记账APP_副本/android)
@@ -232,6 +239,13 @@
   - 纵坐标数字标签移到折线图左侧外面
   - 纵轴添加5条虚线参考线
   - 纵坐标数值统一使用"W"代替"万"
+- 深色模式（v1.2.5）
+  - 新增 `lib/theme/app_theme.dart`，定义 AppColors ThemeExtension 语义色系统
+  - 支持跟随系统 / 手动切换浅色 / 深色
+  - 深色模式下自动隐藏背景图，使用纯色深色背景
+  - 全局颜色统一：支出红 #E2554F、收入绿 #1E7A39、主色调 #069B9B
+  - 底部 Tab 图标、语音覆盖层、按钮等全面适配深色模式
+  - 支付宝图标改为淡底高饱和风格，与其他图标统一
 
 ### 待完成功能 / 可继续演进项
 

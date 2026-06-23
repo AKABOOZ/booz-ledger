@@ -277,3 +277,12 @@ gh release create v<VERSION> \
 
 - 日常迭代测试优先用 `flutter build apk --debug`（约 12s）
 - Release 构建约 60s，仅用于发布版本
+
+### 13. 深色模式（v1.2.5）
+
+- 主题系统位于 `lib/theme/app_theme.dart`
+- 使用 `AppColors` ThemeExtension 定义语义色，通过 `context.appColors` 访问
+- LedgerStore 的 `themeMode` 字段控制主题切换（0=跟随系统, 1=浅色, 2=深色）
+- 新增页面/组件时必须使用 `context.appColors` 语义色，禁止硬编码颜色值
+- 深色模式下背景图不显示（`dark.jpg` 仅用于语音录音覆盖层）
+- 关键颜色常量：支出红 #E2554F、收入绿 #1E7A39、按钮青 #069B9B/#2B9E96

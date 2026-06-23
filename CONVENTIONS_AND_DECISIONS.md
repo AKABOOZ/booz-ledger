@@ -63,6 +63,23 @@
   - `MaterialPageRoute`
   - 自定义卡片式布局
 
+### 主题与颜色规范
+
+- 主题系统位于 `lib/theme/app_theme.dart`
+- 使用 `AppColors` ThemeExtension 定义语义色，通过 `context.appColors` 访问
+- 亮色/暗色双方案，由 `AppTheme.light()` 和 `AppTheme.dark()` 提供
+- 关键语义色：
+  - `background`：页面底色（亮 #F8FAF6 / 暗 #121212）
+  - `surface`：卡片/弹窗背景（亮 white / 暗 #1E1E1E）
+  - `primary`：主题强调色（亮 #167C80 / 暗 #4ECDC4）
+  - `onBackground`：主文字色
+  - `onBackgroundMid`：次要文字色
+- 业务颜色常量（不随主题变化）：
+  - 支出红：`#E2554F`
+  - 收入绿：`#1E7A39`
+  - 按钮青：`#069B9B`（浅色）/ `#2B9E96`（深色）
+- 新增页面/组件时，必须使用 `context.appColors` 语义色，禁止硬编码颜色值
+
 ## 2. 路由规范、命名规则
 
 ### 当前路由方式
@@ -201,6 +218,19 @@
 
 - 新人 / 新 AI 接手理解成本高
 
+### 决策 9：深色模式采用 ThemeExtension + 双 ThemeData 方案
+
+- 新增 `lib/theme/app_theme.dart`，定义 `AppColors` ThemeExtension
+- 通过 `MaterialApp` 的 `theme` / `darkTheme` / `themeMode` 实现双主题
+- 使用 `ListenableBuilder` 监听 store 变化以实现实时切换
+- 深色模式下背景图不显示，使用纯色背景
+
+原因：
+
+- ThemeExtension 是 Flutter 官方推荐的自定义主题方案
+- 双 ThemeData 方案可以充分利用 Material 3 的 dark color scheme 生成能力
+- 语义色系统让新代码不容易写错颜色
+
 ## 4. Codex 开发时的对话要点总结（关键需求变更）
 
 以下是最近一轮开发中，已经确认并落地的关键需求 / 事实，接手者应默认成立。
@@ -335,6 +365,21 @@
 - 在"当前资产"卡片底部新增近30天总资产变化折线图
 - 资产隐藏时，折线图纵坐标和滑动指示器都显示 `****`
 - 去掉了"xxx个账户"的副标题
+
+### 需求变更 20：新增深色模式（v1.2.5）
+
+- 在设置页新增"外观模式"卡片，支持跟随系统 / 浅色 / 深色三种选择
+- 新增 `lib/theme/app_theme.dart`，定义 AppColors ThemeExtension 语义色系统
+- LedgerStore 新增 `themeMode` 字段，持久化到 SharedPreferences
+- 深色模式下：
+  - 背景图不显示，使用纯色深色背景 #121212
+  - 卡片背景 #1E1E1E，文字 #E8E8E8
+  - 主色调降低饱和度（#2B9E96），避免按钮/FAB 过亮刺眼
+  - 底部 Tab 图标使用 SVG colorFilter 适配深色
+  - 语音录音覆盖层使用 dark.jpg 背景
+  - 录音覆盖层移到 Scaffold 外层 Stack，完全遮挡标题和 Tab 栏
+- 浅色模式下保持原有视觉风格不变
+- 关键 bug 修复：手动切换主题不生效（MaterialApp 未监听 store 变化）
 
 ### 对后续 AI 的提醒
 
