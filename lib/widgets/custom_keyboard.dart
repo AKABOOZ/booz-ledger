@@ -98,6 +98,7 @@ class CustomKeyboard extends StatelessWidget {
 
   Widget _buildTypeButton(BuildContext context, String label, LedgerEntryType type) {
     final isSelected = currentType == type;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Expanded(
       child: GestureDetector(
         onTap: () => onTypeChanged(type),
@@ -109,7 +110,9 @@ class CustomKeyboard extends StatelessWidget {
             style: TextStyle(
               fontSize: 13,
               fontWeight: isSelected ? FontWeight.w800 : FontWeight.w400,
-              color: isSelected ? _teal : _unselectedText,
+              color: isSelected
+                  ? (isDark ? const Color(0xFF2B9E96) : _teal)
+                  : (isDark ? Colors.white54 : _unselectedText),
               decoration: TextDecoration.none,
               height: 1.15,
             ),
@@ -199,11 +202,13 @@ class CustomKeyboard extends StatelessWidget {
         splashColor: Colors.transparent,
         highlightColor: _pressedBg,
         onTap: () => onKeyPressed('⌫'),
-        child: const Center(
+        child: Center(
           child: Icon(
             Icons.backspace_outlined,
             size: 22,
-            color: _deleteIcon,
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white70
+                : _deleteIcon,
           ),
         ),
       ),
@@ -248,6 +253,7 @@ class CustomKeyboard extends StatelessWidget {
   }
 
   Widget _buildOperatorButton(BuildContext context, String label) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Material(
       color: Theme.of(context).colorScheme.surface,
       borderRadius: BorderRadius.circular(_radius),
@@ -260,10 +266,10 @@ class CustomKeyboard extends StatelessWidget {
         child: Center(
           child: Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w600,
-              color: _teal,
+              color: isDark ? const Color(0xFF2B9E96) : _teal,
               decoration: TextDecoration.none,
             ),
           ),

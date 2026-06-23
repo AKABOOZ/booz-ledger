@@ -636,12 +636,20 @@ class _LedgerHomeState extends State<LedgerHome> with WidgetsBindingObserver {
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(28),
-              child: NavigationBar(
-                backgroundColor: Colors.transparent,
-                surfaceTintColor: Colors.transparent,
-                elevation: 0,
-                height: 60,
-                labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
+              child: Theme(
+                data: Theme.of(context).copyWith(
+                  tooltipTheme: TooltipThemeData(
+                    decoration: const BoxDecoration(color: Colors.transparent),
+                    textStyle: const TextStyle(color: Colors.transparent, fontSize: 0),
+                    waitDuration: const Duration(days: 1),
+                  ),
+                ),
+                child: NavigationBar(
+                  backgroundColor: Colors.transparent,
+                  surfaceTintColor: Colors.transparent,
+                  elevation: 0,
+                  height: 60,
+                  labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
                 selectedIndex: _index,
                 onDestinationSelected: (value) {
                   if (_index != value) {
@@ -653,6 +661,7 @@ class _LedgerHomeState extends State<LedgerHome> with WidgetsBindingObserver {
                 },
                 destinations: [
                   NavigationDestination(
+                    tooltip: '',
                     icon: Padding(
                       padding: const EdgeInsets.only(top: 4),
                       child: SvgPicture.asset(
@@ -682,6 +691,7 @@ class _LedgerHomeState extends State<LedgerHome> with WidgetsBindingObserver {
                     label: '',
                   ),
                   NavigationDestination(
+                    tooltip: '',
                     icon: Padding(
                       padding: const EdgeInsets.only(top: 4),
                       child: Icon(
@@ -703,6 +713,7 @@ class _LedgerHomeState extends State<LedgerHome> with WidgetsBindingObserver {
                     label: '',
                   ),
                   NavigationDestination(
+                    tooltip: '',
                     icon: Padding(
                       padding: const EdgeInsets.only(top: 4),
                       child: Icon(
@@ -724,6 +735,7 @@ class _LedgerHomeState extends State<LedgerHome> with WidgetsBindingObserver {
                     label: '',
                   ),
                 ],
+              ),
               ),
             ),
           ),

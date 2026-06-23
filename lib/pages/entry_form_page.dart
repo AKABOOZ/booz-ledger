@@ -2226,7 +2226,7 @@ class SelectFieldCard extends StatelessWidget {
                   ],
                 ),
               ),
-              const Icon(Icons.keyboard_arrow_right),
+              Icon(Icons.keyboard_arrow_right, color: context.appColors.onBackgroundMid),
             ],
           ),
         ),
@@ -3648,7 +3648,7 @@ class _AccountFormPageState extends State<AccountFormPage> {
                         const SizedBox(width: 12),
                         const Text('显示图标'),
                         const Spacer(),
-                        const Icon(Icons.keyboard_arrow_right),
+                        Icon(Icons.keyboard_arrow_right, color: context.appColors.onBackgroundMid),
                       ],
                     ),
                   ),
@@ -3745,7 +3745,7 @@ class _KeyboardWithButton extends StatelessWidget {
   final Widget child;
 
   static const _protrusionHeight = 24.0;
-  static const _btnWidth = 59.0;
+  static const _btnWidth = 62.0;
 
   @override
   Widget build(BuildContext context) {
@@ -3806,10 +3806,12 @@ class _KeyboardShapeClipper extends CustomClipper<Path> {
     final pw = size.width;
     final ph = _KeyboardWithButton._protrusionHeight;
     final btnW = _KeyboardWithButton._btnWidth;
-    const r = 8.0;
+    const r = 12.0;
 
+    // 左上圆角
+    path.moveTo(0, ph + r);
+    path.quadraticBezierTo(0, ph, r, ph);
     // 主体顶部从左→右，到达凸起左下角
-    path.moveTo(0, ph);
     path.lineTo(pw - btnW, ph);
     // 凸起左下角（直角）→ 向上
     path.lineTo(pw - btnW, r);

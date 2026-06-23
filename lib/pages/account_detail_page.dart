@@ -120,7 +120,7 @@ class _AccountDetailPageState extends State<AccountDetailPage> {
                 width: 36,
                 height: 36,
                 decoration: BoxDecoration(
-                  color: context.appColors.surface,
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Center(
