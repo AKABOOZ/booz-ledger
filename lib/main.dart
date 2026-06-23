@@ -21,6 +21,7 @@ import 'package:ledger_app/pages/search_page.dart';
 import 'package:ledger_app/pages/settings_page.dart';
 import 'package:ledger_app/pages/statistics_page.dart';
 import 'package:ledger_app/pages/statistics_prefs.dart';
+import 'package:ledger_app/pages/account_detail_page.dart';
 import 'package:ledger_app/services/update_service.dart';
 import 'package:ledger_app/pages/account_detail_page.dart';
 
@@ -888,12 +889,60 @@ class _UpdateDialogState extends State<_UpdateDialog> {
   }
 }
 
-class AccountsPage extends StatelessWidget {
+class AccountsPage extends StatefulWidget {
   const AccountsPage({super.key});
+
+  @override
+  State<AccountsPage> createState() => _AccountsPageState();
+}
+
+class _AccountsPageState extends State<AccountsPage> {
+  List<DailyBalance> _computeTotalAssetBalance(LedgerStore store) {
+    final now = DateTime.now();
+    final result = <DailyBalance>[];
+
+    final entries = store.entries;
+    final start = DateTime(now.year, now.month, now.day)
+        .subtract(const Duration(days: 29));
+
+    int totalChange = 0;
+    for (final entry in entries) {
+      final entryDay = DateTime(entry.occurredAt.year, entry.occurredAt.month, entry.occurredAt.day);
+      if (!entryDay.isBefore(start)) {
+        int change = 0;
+        if (entry.toAccountId != null) change += entry.amountInCents;
+        if (entry.fromAccountId != null) change -= entry.amountInCents;
+        totalChange += change;
+      }
+    }
+
+    int balance = store.totalBalanceInCents - totalChange;
+
+    for (var i = 0; i < 30; i++) {
+      final day = DateTime(now.year, now.month, now.day)
+          .subtract(Duration(days: 29 - i));
+      final dayStart = DateTime(day.year, day.month, day.day);
+
+      final dayEntries = entries.where((e) {
+        final eDay = DateTime(e.occurredAt.year, e.occurredAt.month, e.occurredAt.day);
+        return eDay == dayStart;
+      }).toList();
+
+      for (final entry in dayEntries) {
+        if (entry.toAccountId != null) balance += entry.amountInCents;
+        if (entry.fromAccountId != null) balance -= entry.amountInCents;
+      }
+
+      result.add(DailyBalance(date: dayStart, balance: balance));
+    }
+
+    return result;
+  }
 
   @override
   Widget build(BuildContext context) {
     final store = LedgerScope.of(context);
+    final chartData = _computeTotalAssetBalance(store);
 
     return Container(
       decoration: BoxDecoration(color: Colors.white.withOpacity(0.0)),
@@ -903,7 +952,8 @@ class AccountsPage extends StatelessWidget {
           SummaryPanel(
             title: '当前资产',
             amountInCents: store.totalBalanceInCents,
-            subtitle: '${store.accounts.length} 个账户',
+            showChart: true,
+            chartData: chartData,
           ),
           const SizedBox(height: 16),
           FilledButton.icon(

@@ -10,6 +10,7 @@ import 'package:ledger_app/models/category.dart';
 import 'package:ledger_app/models/enums.dart';
 import 'package:ledger_app/models/ledger_entry.dart';
 import 'package:ledger_app/pages/entry_form_page.dart';
+import 'package:ledger_app/pages/account_detail_page.dart';
 import 'package:ledger_app/store/ledger_store.dart';
 import 'package:ledger_app/utils/helpers.dart';
 import 'package:ledger_app/widgets/common_widgets.dart';
@@ -1787,21 +1788,33 @@ class _CategoryDetailPageState extends State<CategoryDetailPage> {
   }
 }
 
-class SummaryPanel extends StatelessWidget {
+class SummaryPanel extends StatefulWidget {
   const SummaryPanel({
     required this.title,
     required this.amountInCents,
-    required this.subtitle,
+    this.subtitle,
+    this.showChart = false,
+    this.chartData,
     super.key,
   });
 
   final String title;
   final int amountInCents;
-  final String subtitle;
+  final String? subtitle;
+  final bool showChart;
+  final List<DailyBalance>? chartData;
+
+  @override
+  State<SummaryPanel> createState() => _SummaryPanelState();
+}
+
+class _SummaryPanelState extends State<SummaryPanel> {
+  double? _touchX;
 
   @override
   Widget build(BuildContext context) {
     final store = LedgerScope.of(context);
+    final isHidden = store.isAmountHidden;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -1816,7 +1829,7 @@ class SummaryPanel extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            title,
+            widget.title,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               color: Theme.of(context).colorScheme.onPrimary,
             ),
@@ -1827,7 +1840,7 @@ class SummaryPanel extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
-                store.isAmountHidden ? '****' : formatMoney(amountInCents),
+                isHidden ? '****' : formatMoney(widget.amountInCents),
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   color: Theme.of(context).colorScheme.onPrimary,
                   fontWeight: FontWeight.w700,
@@ -1836,7 +1849,6 @@ class SummaryPanel extends StatelessWidget {
               IconButton(
                 onPressed: () async {
                   if (store.isAmountHidden) {
-                    // 显示密码输入弹窗
                     final result = await showPasswordDialog(context);
                     if (result == true) {
                       store.setAmountHidden(false);
@@ -1854,15 +1866,55 @@ class SummaryPanel extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 4),
-          Text(
-            subtitle,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Theme.of(
-                context,
-              ).colorScheme.onPrimary.withValues(alpha: 0.78),
+          if (widget.subtitle != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              widget.subtitle!,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.78),
+              ),
             ),
-          ),
+          ],
+          // 折线图
+          if (widget.showChart && widget.chartData != null) ...[
+            const SizedBox(height: 16),
+            SizedBox(
+              height: 120,
+              child: GestureDetector(
+                onHorizontalDragUpdate: (details) {
+                  setState(() => _touchX = details.localPosition.dx);
+                },
+                onHorizontalDragEnd: (_) {
+                  Future.delayed(const Duration(milliseconds: 800), () {
+                    if (mounted) setState(() => _touchX = null);
+                  });
+                },
+                child: CustomPaint(
+                  size: Size.infinite,
+                  painter: BalanceLineChartPainter(
+                    data: widget.chartData!,
+                    touchX: _touchX,
+                    now: DateTime.now(),
+                    isHidden: isHidden,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '${DateTime.now().subtract(const Duration(days: 29)).month}/${DateTime.now().subtract(const Duration(days: 29)).day}',
+                  style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 12),
+                ),
+                Text(
+                  '${DateTime.now().month}/${DateTime.now().day}',
+                  style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 12),
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );

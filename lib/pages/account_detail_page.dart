@@ -351,11 +351,13 @@ class BalanceLineChartPainter extends CustomPainter {
   final List<DailyBalance> data;
   final double? touchX;
   final DateTime now;
+  final bool isHidden;
 
   BalanceLineChartPainter({
     required this.data,
     this.touchX,
     required this.now,
+    this.isHidden = false,
   });
 
   @override
@@ -401,7 +403,7 @@ class BalanceLineChartPainter extends CustomPainter {
       // 在每条线左侧显示对应的数据
       final value = maxBalance - (range * i / 4).toInt();
       labelTextPaint.text = TextSpan(
-        text: _formatValue(value),
+        text: isHidden ? '****' : _formatValue(value),
         style: TextStyle(
           color: Colors.white.withOpacity(0.5),
           fontSize: 8,
@@ -455,7 +457,7 @@ class BalanceLineChartPainter extends CustomPainter {
       // 画日期标签
       final date = data[touchIndex].date;
       final label = '${date.month}/${date.day}';
-      final balance = formatMoney(data[touchIndex].balance);
+      final balance = isHidden ? '****' : formatMoney(data[touchIndex].balance);
 
       final textPainter = TextPainter(
         text: TextSpan(
