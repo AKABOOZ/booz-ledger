@@ -2421,15 +2421,9 @@ class _BottomSheetLikeRoute<T> extends PageRoute<T> {
     Animation<double> secondaryAnimation,
     Widget child,
   ) {
-    final curved = CurvedAnimation(
-      parent: animation,
-      curve: Curves.easeOutCubic,
-      reverseCurve: Curves.easeInCubic,
-    );
-    return FadeTransition(
-      opacity: Tween<double>(begin: 0, end: 1).animate(curved),
-      child: child,
-    );
+    // 不使用 FadeTransition — 子页面已有 SlideTransition 做滑入动画，
+    // FadeTransition 从 opacity 0 开始会"吃掉"滑动的前半段，导致动画看不全。
+    return child;
   }
 }
 
