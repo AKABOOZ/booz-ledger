@@ -491,9 +491,15 @@ class _EntryFormPageState extends State<EntryFormPage> {
           child: TextFormField(
             controller: _noteDraftController,
             focusNode: _noteFocusNode,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               labelText: '备注',
               alignLabelWithHint: true,
+              filled: true,
+              fillColor: context.appColors.surface,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide.none,
+              ),
             ),
             maxLines: 5,
             minLines: 5,
@@ -523,8 +529,8 @@ class _EntryFormPageState extends State<EntryFormPage> {
               child: FilledButton(
                 onPressed: _closeNoteEditor,
                 style: FilledButton.styleFrom(
-                  backgroundColor: context.appColors.surface,
-                  foregroundColor: context.appColors.onBackground,
+                  backgroundColor: context.appColors.surfaceAlt,
+                  foregroundColor: context.appColors.onBackgroundMid,
                 ),
                 child: const Text('取消'),
               ),

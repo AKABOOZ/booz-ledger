@@ -429,6 +429,27 @@ class BalanceLineChartPainter extends CustomPainter {
       points.add(Offset(x, y));
     }
 
+    // 画折线下方的渐变填充
+    final fillPath = Path();
+    fillPath.moveTo(points.first.dx, size.height);
+    fillPath.lineTo(points.first.dx, points.first.dy);
+    for (var i = 1; i < points.length; i++) {
+      fillPath.lineTo(points[i].dx, points[i].dy);
+    }
+    fillPath.lineTo(points.last.dx, size.height);
+    fillPath.close();
+
+    final fillPaint = Paint()
+      ..shader = ui.Gradient.linear(
+        Offset(0, 0),
+        Offset(0, size.height),
+        [
+          Colors.white.withOpacity(0.5),
+          Colors.white.withOpacity(0.0),
+        ],
+      );
+    canvas.drawPath(fillPath, fillPaint);
+
     // 画折线
     final path = Path();
     path.moveTo(points.first.dx, points.first.dy);

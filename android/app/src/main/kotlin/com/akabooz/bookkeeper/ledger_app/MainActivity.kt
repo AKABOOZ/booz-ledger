@@ -3,6 +3,7 @@ package com.akabooz.bookkeeper.ledger_app
 import android.app.Dialog
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.Rect
 import android.graphics.drawable.GradientDrawable
@@ -180,11 +181,21 @@ class MainActivity : FlutterActivity() {
         var keyboardWasVisible = false
         var layoutListener: ViewTreeObserver.OnGlobalLayoutListener? = null
 
+        val isDark = (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
+
         fun resolveOnce(value: String?) {
             if (resolved) return
             resolved = true
             result.success(value)
         }
+
+        val panelBg = if (isDark) Color.parseColor("#121212") else Color.parseColor("#F8FAF6")
+        val titleColor = if (isDark) Color.parseColor("#E8E8E8") else Color.parseColor("#1D1D1F")
+        val inputBg = if (isDark) Color.parseColor("#1E1E1E") else Color.WHITE
+        val inputBorder = if (isDark) Color.parseColor("#3A3A3A") else Color.parseColor("#DDE5E0")
+        val inputTextColor = if (isDark) Color.parseColor("#E8E8E8") else Color.parseColor("#1D1D1F")
+        val cancelBg = if (isDark) Color.parseColor("#252525") else Color.WHITE
+        val cancelFg = if (isDark) Color.parseColor("#A0A0A0") else Color.parseColor("#1D1D1F")
 
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -196,7 +207,7 @@ class MainActivity : FlutterActivity() {
                     0f, 0f,
                     0f, 0f,
                 )
-                setColor(Color.parseColor("#F8FAF6"))
+                setColor(panelBg)
             }
             setPadding(dp(16))
             layoutParams = ViewGroup.LayoutParams(
@@ -209,7 +220,7 @@ class MainActivity : FlutterActivity() {
 
         val title = TextView(this).apply {
             text = "编辑备注"
-            setTextColor(Color.parseColor("#1D1D1F"))
+            setTextColor(titleColor)
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
             setTypeface(typeface, android.graphics.Typeface.BOLD)
         }
@@ -230,11 +241,12 @@ class MainActivity : FlutterActivity() {
             inputType = InputType.TYPE_CLASS_TEXT or
                 InputType.TYPE_TEXT_FLAG_MULTI_LINE or
                 InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
+            setTextColor(inputTextColor)
             background = GradientDrawable().apply {
                 shape = GradientDrawable.RECTANGLE
                 cornerRadius = dp(18).toFloat()
-                setColor(Color.WHITE)
-                setStroke(dp(1), Color.parseColor("#DDE5E0"))
+                setColor(inputBg)
+                setStroke(dp(1), inputBorder)
             }
             setPadding(dp(14))
         }
@@ -258,8 +270,8 @@ class MainActivity : FlutterActivity() {
 
         val cancelButton = buildActionButton(
             text = "取消",
-            backgroundColor = Color.WHITE,
-            foreground = Color.parseColor("#1D1D1F"),
+            backgroundColor = cancelBg,
+            foreground = cancelFg,
         ) {
             cancelPressed = true
             resolveOnce(null)
@@ -309,6 +321,7 @@ class MainActivity : FlutterActivity() {
             )
             setBackgroundDrawableResource(android.R.color.transparent)
         }
+        // 删除 FLAG_SECURE 避免影响截图等功能
         dialog.setOnCancelListener {
             resolveOnce(input.text.toString())
         }
@@ -321,6 +334,7 @@ class MainActivity : FlutterActivity() {
             } else {
                 resolveOnce(null)
             }
+            // 无额外操作
         }
         dialog.setOnShowListener {
             dialog.window?.let { window ->
