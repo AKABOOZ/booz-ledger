@@ -2421,9 +2421,18 @@ class _BottomSheetLikeRoute<T> extends PageRoute<T> {
     Animation<double> secondaryAnimation,
     Widget child,
   ) {
-    // 不使用 FadeTransition — 子页面已有 SlideTransition 做滑入动画，
-    // FadeTransition 从 opacity 0 开始会"吃掉"滑动的前半段，导致动画看不全。
-    return child;
+    final curved = CurvedAnimation(
+      parent: animation,
+      curve: Curves.easeOutCubic,
+      reverseCurve: Curves.easeInCubic,
+    );
+    return SlideTransition(
+      position: Tween<Offset>(
+        begin: const Offset(0, 1),
+        end: Offset.zero,
+      ).animate(curved),
+      child: child,
+    );
   }
 }
 
@@ -2446,17 +2455,6 @@ class _CategoryPickerRoutePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final animation = ModalRoute.of(context)?.animation;
-    final slide = animation == null
-        ? const AlwaysStoppedAnimation<Offset>(Offset.zero)
-        : Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero).animate(
-            CurvedAnimation(
-              parent: animation,
-              curve: Curves.easeOutCubic,
-              reverseCurve: Curves.easeInCubic,
-            ),
-          );
-
     return Material(
       type: MaterialType.transparency,
       child: Stack(
@@ -2469,50 +2467,47 @@ class _CategoryPickerRoutePage extends StatelessWidget {
           ),
           Align(
             alignment: Alignment.bottomCenter,
-            child: SlideTransition(
-              position: slide,
-              child: RepaintBoundary(
-                child: Container(
-                  height: MediaQuery.sizeOf(context).height * 0.74,
-                  decoration: BoxDecoration(
-                    color: context.appColors.background,
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(28),
-                      topRight: Radius.circular(28),
-                    ),
+            child: RepaintBoundary(
+              child: Container(
+                height: MediaQuery.sizeOf(context).height * 0.74,
+                decoration: BoxDecoration(
+                  color: context.appColors.background,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(28),
+                    topRight: Radius.circular(28),
                   ),
-                  child: SafeArea(
-                    top: false,
-                    child: _CategoryPickerSheetBody(
-                      title: title,
-                      sections: sections,
-                      selectedGroup: selectedGroup,
-                      selectedCategory: selectedCategory,
-                      headerTrailing: [
-                        TextButton.icon(
-                          onPressed: () async {
-                            final result = await Navigator.of(context)
-                                .push<CategoryPickResult>(
-                                  MaterialPageRoute(
-                                    builder: (_) => CategoryFormPage(
-                                      store: store,
-                                      type: type,
-                                    ),
+                ),
+                child: SafeArea(
+                  top: false,
+                  child: _CategoryPickerSheetBody(
+                    title: title,
+                    sections: sections,
+                    selectedGroup: selectedGroup,
+                    selectedCategory: selectedCategory,
+                    headerTrailing: [
+                      TextButton.icon(
+                        onPressed: () async {
+                          final result = await Navigator.of(context)
+                              .push<CategoryPickResult>(
+                                MaterialPageRoute(
+                                  builder: (_) => CategoryFormPage(
+                                    store: store,
+                                    type: type,
                                   ),
-                                );
-                            if (result != null && context.mounted) {
-                              Navigator.of(context).pop(result);
-                            }
-                          },
-                          icon: const Icon(Icons.add),
-                          label: const Text('添加小类'),
-                        ),
-                        IconButton(
-                          onPressed: () => Navigator.of(context).pop(),
-                          icon: const Icon(Icons.close),
-                        ),
-                      ],
-                    ),
+                                ),
+                              );
+                          if (result != null && context.mounted) {
+                            Navigator.of(context).pop(result);
+                          }
+                        },
+                        icon: const Icon(Icons.add),
+                        label: const Text('添加小类'),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        icon: const Icon(Icons.close),
+                      ),
+                    ],
                   ),
                 ),
               ),
