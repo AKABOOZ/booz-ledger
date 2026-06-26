@@ -1951,6 +1951,7 @@ class _EntryTypeSwitchState extends State<EntryTypeSwitch> {
         await widget.onChanged(children[nextIndex]);
       },
       child: Container(
+        height: 52,
         padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
           color: context.appColors.surfaceAlt,
@@ -1997,38 +1998,40 @@ class _EntryTypeSwitchState extends State<EntryTypeSwitch> {
                 },
               ),
             ),
-            // 选项按钮
-            Row(
-              children: children.map((type) {
-                return Expanded(
-                  child: GestureDetector(
-                    onTapDown: widget.onTapDown == null
-                        ? null
-                        : (_) => widget.onTapDown!(),
-                    onTap: () async {
-                      if (type == _value) {
-                        return;
-                      }
-                      await widget.onChanged(type);
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      child: Text(
-                        type.label,
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color: type == _value
-                              ? Theme.of(context).colorScheme.primary
-                              : context.appColors.onBackgroundMid,
-                          fontWeight: type == _value
-                              ? FontWeight.w800
-                              : FontWeight.w500,
+            // 选项按钮 — 整个 1/3 区域都可点击
+            Positioned.fill(
+              child: Row(
+                children: children.map((type) {
+                  return Expanded(
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTapDown: widget.onTapDown == null
+                          ? null
+                          : (_) => widget.onTapDown!(),
+                      onTap: () async {
+                        if (type == _value) {
+                          return;
+                        }
+                        await widget.onChanged(type);
+                      },
+                      child: Center(
+                        child: Text(
+                          type.label,
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                            color: type == _value
+                                ? Theme.of(context).colorScheme.primary
+                                : context.appColors.onBackgroundMid,
+                            fontWeight: type == _value
+                                ? FontWeight.w800
+                                : FontWeight.w500,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                );
-              }).toList(),
+                  );
+                }).toList(),
+              ),
             ),
           ],
         ),
@@ -2326,42 +2329,49 @@ Future<CategoryPickResult?> showCategoryPickerSheet<T>(
   required List<ExpenseCategoryItem> Function(T group) childrenOf,
   required String Function(T group) groupNameOf,
 }) {
-  final recentCategories = recentCategoryPicks(
-    store,
-    type,
-    groups,
-    childrenOf: childrenOf,
-    groupNameOf: groupNameOf,
-  );
-  final sections = <_CategoryPickerSectionData>[
-    if (recentCategories.isNotEmpty)
-      _CategoryPickerSectionData(title: '最近使用', items: recentCategories),
-    for (final group in groups)
-      _CategoryPickerSectionData(
-        title: groupNameOf(group),
-        items: childrenOf(group)
-            .map(
-              (item) => CategoryPickOption(
-                groupNameOf(group),
-                item.name,
-                item.iconKey,
-              ),
-            )
-            .toList(growable: false),
+  final completer = Completer<CategoryPickResult?>();
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (!context.mounted || completer.isCompleted) return;
+    final recentCategories = recentCategoryPicks(
+      store,
+      type,
+      groups,
+      childrenOf: childrenOf,
+      groupNameOf: groupNameOf,
+    );
+    final sections = <_CategoryPickerSectionData>[
+      if (recentCategories.isNotEmpty)
+        _CategoryPickerSectionData(title: '最近使用', items: recentCategories),
+      for (final group in groups)
+        _CategoryPickerSectionData(
+          title: groupNameOf(group),
+          items: childrenOf(group)
+              .map(
+                (item) => CategoryPickOption(
+                  groupNameOf(group),
+                  item.name,
+                  item.iconKey,
+                ),
+              )
+              .toList(growable: false),
+        ),
+    ];
+    Navigator.of(context).push<CategoryPickResult>(
+      _BottomSheetLikeRoute<CategoryPickResult>(
+        builder: (routeContext) => _CategoryPickerRoutePage(
+          title: title,
+          type: type,
+          store: store,
+          sections: sections,
+          selectedGroup: selectedGroup,
+          selectedCategory: selectedCategory,
+        ),
       ),
-  ];
-  return Navigator.of(context).push<CategoryPickResult>(
-    _BottomSheetLikeRoute<CategoryPickResult>(
-      builder: (routeContext) => _CategoryPickerRoutePage(
-        title: title,
-        type: type,
-        store: store,
-        sections: sections,
-        selectedGroup: selectedGroup,
-        selectedCategory: selectedCategory,
-      ),
-    ),
-  );
+    ).then((result) {
+      if (!completer.isCompleted) completer.complete(result);
+    });
+  });
+  return completer.future;
 }
 
 class CategoryPickOption {

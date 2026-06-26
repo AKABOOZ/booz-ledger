@@ -275,7 +275,7 @@ class MainActivity : FlutterActivity() {
         ) {
             cancelPressed = true
             resolveOnce(null)
-            dialog.dismiss()
+            dismissWithAnimation(root, dialog)
         }
         val confirmButton = buildActionButton(
             text = "确定",
@@ -283,7 +283,7 @@ class MainActivity : FlutterActivity() {
             foreground = Color.WHITE,
         ) {
             resolveOnce(input.text.toString())
-            dialog.dismiss()
+            dismissWithAnimation(root, dialog)
         }
 
         buttonRow.addView(
@@ -366,7 +366,7 @@ class MainActivity : FlutterActivity() {
                         keyboardWasVisible = true
                     } else if (keyboardWasVisible && dialog.isShowing && !resolved) {
                         resolveOnce(input.text.toString())
-                        dialog.dismiss()
+                        dismissWithAnimation(root, dialog)
                     }
                 }
                 decorView?.viewTreeObserver?.addOnGlobalLayoutListener(layoutListener)
@@ -381,6 +381,16 @@ class MainActivity : FlutterActivity() {
             }
         }
         dialog.show()
+    }
+
+    private fun dismissWithAnimation(root: android.view.View, dialog: Dialog) {
+        val height = root.height.toFloat()
+        root.animate()
+            .alpha(0f)
+            .translationY(height)
+            .setDuration(180)
+            .withEndAction { dialog.dismiss() }
+            .start()
     }
 
     private fun buildActionButton(
