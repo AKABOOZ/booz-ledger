@@ -12,6 +12,7 @@
 - **自动更新**：APP 启动时自动检测 GitHub 新版本并提示更新
 - **自定义键盘**：记账页面内置自定义数字键盘，支持加减法运算
 - **深色模式**：支持跟随系统 / 手动切换浅色 / 深色，适合夜间使用
+- **跨厂商兼容**：已修复 OPPO/Realme 等 ColorOS 系手机的系统级焦点高亮兼容性问题
 
 ## 技术栈
 
@@ -84,5 +85,11 @@ gh release create v<VERSION> \
   --repo AKABOOZ/booz-ledger \
   --title "波哥记账 v<VERSION>" \
   --notes "更新内容" \
-  android/app/build/outputs/flutter-apk/app-debug.apk
+  android/app/build/outputs/flutter-apk/app-release.apk
 ```
+
+## Android 主题配置
+
+- `android/app/src/main/res/values/styles.xml` 和 `values-night/styles.xml` 中的 `NormalTheme` 需保持以下配置：
+  - `android:windowBackground`：与 APP 主题色一致（`#FFF8FAF6`），防止冷启动黑屏
+  - `android:defaultFocusHighlightEnabled`：设为 `false`，防止 OPPO/Realme 等设备显示系统级绿色焦点高亮框

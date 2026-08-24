@@ -246,6 +246,10 @@
   - 全局颜色统一：支出红 #E2554F、收入绿 #1E7A39、主色调 #069B9B
   - 底部 Tab 图标、语音覆盖层、按钮等全面适配深色模式
   - 支付宝图标改为淡底高饱和风格，与其他图标统一
+- OPPO 系手机绿色描边修复（v1.3.1）
+  - 修复输入记账备注后，在 OPPO/Realme 等 ColorOS 系手机上屏幕四周出现绿色描边的 bug
+  - 根因：ColorOS 系统级无障碍焦点高亮（`defaultFocusHighlightEnabled`）在焦点转移时被触发
+  - 修复方案：在 Android `styles.xml` 中禁用 `android:defaultFocusHighlightEnabled`；Flutter 层增加占位 `FocusNode` 防止焦点丢失到根 View
 
 ### 待完成功能 / 可继续演进项
 
@@ -331,6 +335,16 @@
   - `non_constant_identifier_names`
   - `unused_local_variable`
 - 当前不是零告警仓库，新改动要避免继续放大
+
+### 9. OPPO/Realme 系手机曾出现系统级绿色焦点高亮框（v1.3.1 已修复）
+
+- 问题：在记一笔页面输入备注后点击确定，屏幕四周出现绿色描边
+- 仅在 OPPO、Realme 等 ColorOS 系手机上出现，小米不复现
+- 根因：ColorOS 系统的无障碍焦点指示器（`android:defaultFocusHighlightEnabled`）在 Flutter unfocus 时被触发
+- 修复方案：
+  1. Android `styles.xml` 中设置 `<item name="android:defaultFocusHighlightEnabled">false</item>`
+  2. Flutter `_closeNoteEditor()` 中增加占位 `FocusNode` 接收焦点，避免焦点落到根 View
+- 注意：不要轻易移除这个配置，否则在 ColorOS 设备上问题会复现
 
 ### 9. README 不是当前项目说明
 

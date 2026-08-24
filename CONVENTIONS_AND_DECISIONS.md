@@ -381,6 +381,15 @@
 - 浅色模式下保持原有视觉风格不变
 - 关键 bug 修复：手动切换主题不生效（MaterialApp 未监听 store 变化）
 
+### 需求变更 21：修复 OPPO/Realme 系手机绿色描边（v1.3.1）
+
+- 问题：在记一笔页面输入备注文字后点击确定，手机屏幕四周出现绿色描边
+- 复现设备：OPPO、Realme 等 ColorOS 系手机；小米不复现
+- 根因：ColorOS 系统的无障碍焦点指示器在 Flutter `unfocus()` 将焦点从 `TextFormField` 移走时被触发，系统将焦点交给根 View 并绘制绿色高亮框
+- 修复方案（两层防御）：
+  1. **Android 原生层**：在 `android/app/src/main/res/values/styles.xml` 和 `values-night/styles.xml` 的 `NormalTheme` 中添加 `<item name="android:defaultFocusHighlightEnabled">false</item>`
+  2. **Flutter 层**：在 `_closeNoteEditor()` 中 `unfocus()` 后立即调用占位 `FocusNode.requestFocus()`，防止焦点落到根 View；在备注编辑面板 `Column` 末尾放置一个 0×0 的隐藏 `TextField` 承接焦点
+
 ### 对后续 AI 的提醒
 
 - 不要把根目录 React/Vite 工程当成主线
@@ -391,3 +400,5 @@
 - GitHub CLI (`gh`) 已安装，可用于自动发布版本到 GitHub Release
 - 发版命令：`gh release create v<VERSION> --repo AKABOOZ/booz-ledger --title “波哥记账 v<VERSION>” --notes “更新内容” <APK路径>`
 - Flutter debug 模式构建比 release 快很多（约 12s vs 60s），日常迭代测试优先用 debug
+- Android `NormalTheme` 中 `android:defaultFocusHighlightEnabled=false` 是防止 ColorOS 绿色焦点高亮的关键配置，不要移除
+- Flutter `unfocus()` 后建议用占位 `FocusNode` 接住焦点，避免系统级 UI 干扰（已在 `entry_form_page.dart` 中实践）
