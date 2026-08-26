@@ -186,10 +186,6 @@ class _EntryFormPageState extends State<EntryFormPage> {
   final _noteDraftController = TextEditingController();
   final FocusNode _amountFocusNode = FocusNode();
   final FocusNode _noteFocusNode = FocusNode();
-  // 占位 FocusNode：收起备注键盘后将焦点转到此处，
-  // 防止系统将焦点交给根 View 导致 Realme/OPPO 等设备
-  // 显示屏幕四角的无障碍绿色高亮框。
-  final FocusNode _safeFocusSink = FocusNode();
   final VoiceRecordingController _voiceRecorder = VoiceRecordingController();
   final GlobalKey _entryVoiceButtonKey = GlobalKey();
   bool _isRecording = false;
@@ -304,7 +300,6 @@ class _EntryFormPageState extends State<EntryFormPage> {
     _noteDraftController.dispose();
     _amountFocusNode.dispose();
     _noteFocusNode.dispose();
-    _safeFocusSink.dispose();
     _voiceRecorder.dispose();
     super.dispose();
   }
@@ -315,8 +310,6 @@ class _EntryFormPageState extends State<EntryFormPage> {
   }) async {
     final hadKeyboard = MediaQuery.viewInsetsOf(context).bottom > 0;
     FocusManager.instance.primaryFocus?.unfocus();
-    // 将焦点转移到占位节点，防止 Realme/OPPO 等设备显示无障碍绿色高亮
-    _safeFocusSink.requestFocus();
     await SystemChannels.textInput.invokeMethod<void>('TextInput.hide');
     if (waitForAnimation && hadKeyboard) {
       var settledFrames = 0;
@@ -401,8 +394,6 @@ class _EntryFormPageState extends State<EntryFormPage> {
 
   void _closeNoteEditor() {
     FocusManager.instance.primaryFocus?.unfocus();
-    // 将焦点转移到占位节点，避免系统级无障碍焦点高亮
-    _safeFocusSink.requestFocus();
     if (!_isNoteEditorVisible) {
       return;
     }
@@ -552,17 +543,6 @@ class _EntryFormPageState extends State<EntryFormPage> {
               ),
             ),
           ],
-        ),
-        // 隐藏的占位 Focus：收起键盘后焦点转到这里，
-        // 防止 Realme/OPPO 等设备显示系统级无障碍绿色高亮框。
-        SizedBox(
-          width: 0,
-          height: 0,
-          child: TextField(
-            focusNode: _safeFocusSink,
-            enableInteractiveSelection: false,
-            decoration: const InputDecoration.collapsed(hintText: ''),
-          ),
         ),
       ],
     );
