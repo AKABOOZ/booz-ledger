@@ -24,7 +24,6 @@ class _SettingsPageState extends State<SettingsPage> {
   bool _isExporting = false;
   bool _isImporting = false;
   bool _isTestingConnection = false;
-  bool _isRestoringFromWebdav = false;
   bool _isSyncingToWebdav = false;
   bool _hasLoadedSettings = false;
   AiProvider _selectedAiProvider = AiProvider.deepSeek;
@@ -1022,54 +1021,25 @@ class _SettingsPageState extends State<SettingsPage> {
                           ],
                         ),
                         const SizedBox(height: 12),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: FilledButton.icon(
-                                style: FilledButton.styleFrom(
-                                  minimumSize: const Size.fromHeight(52),
-                                ),
-                                onPressed:
-                                    _isSyncingToWebdav || store.isSyncInProgress
-                                    ? null
-                                    : () => _syncToWebdav(store),
-                                icon: _isSyncingToWebdav
-                                    ? const SizedBox(
-                                        width: 20,
-                                        height: 20,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          color: Colors.white,
-                                        ),
-                                      )
-                                    : const Icon(Icons.cloud_upload_rounded),
-                                label: const Text('手动同步'),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: OutlinedButton.icon(
-                                style: OutlinedButton.styleFrom(
-                                  minimumSize: const Size.fromHeight(52),
-                                ),
-                                onPressed:
-                                    _isRestoringFromWebdav ||
-                                        store.isSyncInProgress
-                                    ? null
-                                    : () => _restoreFromWebdav(store),
-                                icon: _isRestoringFromWebdav
-                                    ? const SizedBox(
-                                        width: 20,
-                                        height: 20,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                        ),
-                                      )
-                                    : const Icon(Icons.cloud_download_rounded),
-                                label: const Text('从 NAS 恢复数据'),
-                              ),
-                            ),
-                          ],
+                        FilledButton.icon(
+                          style: FilledButton.styleFrom(
+                            minimumSize: const Size.fromHeight(52),
+                          ),
+                          onPressed:
+                              _isSyncingToWebdav || store.isSyncInProgress
+                              ? null
+                              : () => _syncToWebdav(store),
+                          icon: _isSyncingToWebdav
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Icon(Icons.sync_rounded),
+                          label: const Text('立即同步'),
                         ),
                       ],
                     ),
@@ -1267,49 +1237,6 @@ class _SettingsPageState extends State<SettingsPage> {
     } finally {
       if (mounted) {
         setState(() => _isTestingConnection = false);
-      }
-    }
-  }
-
-  Future<void> _restoreFromWebdav(LedgerStore store) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('从 NAS 恢复数据？'),
-        content: const Text('恢复会覆盖当前所有账户、流水和自定义分类，确定要继续吗？'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('取消'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('恢复'),
-          ),
-        ],
-      ),
-    );
-    if (confirmed != true || !mounted) {
-      return;
-    }
-
-    setState(() => _isRestoringFromWebdav = true);
-    try {
-      final success = await store.restoreFromWebdav();
-      if (mounted) {
-        if (success) {
-          showSnack(context, '恢复成功');
-        } else {
-          showSnack(context, store.lastWebdavError ?? '恢复失败，请检查配置和网络连接');
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        showSnack(context, '恢复失败：$e');
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isRestoringFromWebdav = false);
       }
     }
   }
