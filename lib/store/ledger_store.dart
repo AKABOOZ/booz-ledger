@@ -834,18 +834,16 @@ class LedgerStore extends ChangeNotifier {
       _syncPhase = SyncPhase.downloading;
       notifyListeners();
       final files = await _webDavClient.list(directory, authorization);
-      final backups = files.where((file) => _isBackupFile(file.name)).toList()
-        ..sort((a, b) => a.name.compareTo(b.name));
+      final remote = await _loadLatestRemoteBackup(
+        directory,
+        authorization,
+        files,
+      );
       LedgerSyncPayload merged = _currentSyncPayload();
-      if (backups.isNotEmpty) {
-        final remoteRaw = await _webDavClient.download(
-          directory.resolve(Uri.encodeComponent(backups.last.name)),
-          authorization,
-        );
-        final remote = LedgerSyncPayload.fromJson(remoteRaw);
+      if (remote != null) {
         _syncPhase = SyncPhase.merging;
         notifyListeners();
-        merged = LedgerSyncMerger.merge(merged, remote);
+        merged = LedgerSyncMerger.merge(merged, remote.payload);
       }
 
       _applySyncPayload(merged);
@@ -914,18 +912,15 @@ class LedgerStore extends ChangeNotifier {
       final directory = _webdavDirectoryUri(_webdavConfig.urlFor(endpoint)!);
       final authorization = _webdavAuthorization(_webdavConfig);
       final files = await _webDavClient.list(directory, authorization);
-      final backups = files.where((file) => _isBackupFile(file.name)).toList()
-        ..sort((a, b) => a.name.compareTo(b.name));
-      if (backups.isEmpty) {
+      final remote = await _loadLatestRemoteBackup(
+        directory,
+        authorization,
+        files,
+      );
+      if (remote == null) {
         throw const WebDavException('NAS 目录里没有可恢复的备份文件');
       }
-      final payload = LedgerSyncPayload.fromJson(
-        await _webDavClient.download(
-          directory.resolve(Uri.encodeComponent(backups.last.name)),
-          authorization,
-        ),
-      );
-      _applySyncPayload(payload);
+      _applySyncPayload(remote.payload);
       await _save(waitForDisk: true);
       _lastSyncEndpoint = endpoint;
       _lastWebdavError = null;
@@ -1027,19 +1022,60 @@ class LedgerStore extends ChangeNotifier {
     }
   }
 
+  Future<_RemoteBackup?> _loadLatestRemoteBackup(
+    Uri directory,
+    String authorization,
+    List<WebDavFileInfo> files,
+  ) async {
+    final backups = await _loadRemoteBackups(directory, authorization, files);
+    if (backups.isEmpty) return null;
+    backups.sort((a, b) {
+      final byExportedAt = a.payload.exportedAt.compareTo(b.payload.exportedAt);
+      return byExportedAt != 0
+          ? byExportedAt
+          : a.file.name.compareTo(b.file.name);
+    });
+    return backups.last;
+  }
+
+  Future<List<_RemoteBackup>> _loadRemoteBackups(
+    Uri directory,
+    String authorization,
+    List<WebDavFileInfo> files,
+  ) async {
+    final candidates = files.where((file) => _isBackupFile(file.name)).toList();
+    final backups = <_RemoteBackup>[];
+    for (final file in candidates) {
+      try {
+        final raw = await _webDavClient.download(
+          directory.resolve(Uri.encodeComponent(file.name)),
+          authorization,
+        );
+        backups.add(_RemoteBackup(file, LedgerSyncPayload.fromJson(raw)));
+      } catch (_) {
+        // An old/corrupted historical backup must not prevent recovery from a
+        // newer valid backup. If every candidate is unreadable, report failure.
+      }
+    }
+    if (candidates.isNotEmpty && backups.isEmpty) {
+      throw const WebDavException('NAS 中没有可读取的备份文件');
+    }
+    return backups;
+  }
+
   Future<void> _cleanupRemoteBackups(
     Uri directory,
     String authorization,
     List<WebDavFileInfo> files,
   ) async {
-    final backups = files.where((file) => _isBackupFile(file.name)).toList()
-      ..sort((a, b) => a.name.compareTo(b.name));
-    for (final file in backups.take(
+    final backups = await _loadRemoteBackups(directory, authorization, files)
+      ..sort((a, b) => a.payload.exportedAt.compareTo(b.payload.exportedAt));
+    for (final backup in backups.take(
       (backups.length - 9).clamp(0, backups.length),
     )) {
       try {
         await _webDavClient.delete(
-          directory.resolve(Uri.encodeComponent(file.name)),
+          directory.resolve(Uri.encodeComponent(backup.file.name)),
           authorization,
         );
       } on WebDavException {
@@ -1069,6 +1105,13 @@ class LedgerStore extends ChangeNotifier {
   String _sanitizeUriLikePath(String value) {
     return value.replaceAllMapped(RegExp(r'%(?![0-9A-Fa-f]{2})'), (_) => '%25');
   }
+}
+
+class _RemoteBackup {
+  const _RemoteBackup(this.file, this.payload);
+
+  final WebDavFileInfo file;
+  final LedgerSyncPayload payload;
 }
 
 class LedgerScope extends InheritedNotifier<LedgerStore> {
