@@ -5,13 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 
 import 'package:ledger_app/models/enums.dart';
+import 'package:ledger_app/models/webdav_sync_models.dart';
 import 'package:ledger_app/services/ai_ledger_service.dart';
 import 'package:ledger_app/services/import_helpers.dart';
 import 'package:ledger_app/services/update_service.dart';
 import 'package:ledger_app/store/ledger_store.dart';
 import 'package:ledger_app/utils/helpers.dart';
 import 'package:ledger_app/theme/app_theme.dart';
-
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -36,6 +36,7 @@ class _SettingsPageState extends State<SettingsPage> {
   final _qwenApiKeyController = TextEditingController();
   final _qwenModelController = TextEditingController();
   final _webdavUrlController = TextEditingController();
+  final _webdavExternalUrlController = TextEditingController();
   final _webdavUsernameController = TextEditingController();
   final _webdavPasswordController = TextEditingController();
 
@@ -57,6 +58,7 @@ class _SettingsPageState extends State<SettingsPage> {
     _ensureProviderDefaults(AiProvider.deepSeek);
     _ensureProviderDefaults(AiProvider.qwen);
     _webdavUrlController.text = store.webdavUrl ?? '';
+    _webdavExternalUrlController.text = store.webdavExternalUrl ?? '';
     _webdavUsernameController.text = store.webdavUsername ?? '';
     _webdavPasswordController.text = store.webdavPassword ?? '';
     _hasLoadedSettings = true;
@@ -71,6 +73,7 @@ class _SettingsPageState extends State<SettingsPage> {
     _qwenApiKeyController.dispose();
     _qwenModelController.dispose();
     _webdavUrlController.dispose();
+    _webdavExternalUrlController.dispose();
     _webdavUsernameController.dispose();
     _webdavPasswordController.dispose();
     super.dispose();
@@ -123,7 +126,11 @@ class _SettingsPageState extends State<SettingsPage> {
                       color: colors.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    child: Icon(Icons.dark_mode_outlined, color: colors.primary, size: 28),
+                    child: Icon(
+                      Icons.dark_mode_outlined,
+                      color: colors.primary,
+                      size: 28,
+                    ),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -326,9 +333,9 @@ class _SettingsPageState extends State<SettingsPage> {
                 padding: const EdgeInsets.all(16),
                 child: Text(
                   '外观模式',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
                 ),
               ),
               _buildThemeOption(store, '跟随系统', 0, Icons.brightness_auto),
@@ -342,15 +349,21 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Widget _buildThemeOption(LedgerStore store, String label, int value, IconData icon) {
+  Widget _buildThemeOption(
+    LedgerStore store,
+    String label,
+    int value,
+    IconData icon,
+  ) {
     final isSelected = store.themeMode == value;
     final colors = context.appColors;
     return ListTile(
-      leading: Icon(icon, color: isSelected ? colors.primary : colors.onBackgroundMid),
+      leading: Icon(
+        icon,
+        color: isSelected ? colors.primary : colors.onBackgroundMid,
+      ),
       title: Text(label),
-      trailing: isSelected
-          ? Icon(Icons.check, color: colors.primary)
-          : null,
+      trailing: isSelected ? Icon(Icons.check, color: colors.primary) : null,
       onTap: () async {
         await store.setThemeMode(value);
         if (mounted) Navigator.of(context).pop();
@@ -449,7 +462,9 @@ class _SettingsPageState extends State<SettingsPage> {
                     const SizedBox(height: 8),
                     Text(
                       '${selectedProvider.providerSummary}\n图片识别仍然会先走百度OCR，再交给当前服务商做理解。',
-                      style: TextStyle(color: context.appColors.onBackgroundMid),
+                      style: TextStyle(
+                        color: context.appColors.onBackgroundMid,
+                      ),
                     ),
                     const SizedBox(height: 16),
                     SwitchListTile(
@@ -491,12 +506,16 @@ class _SettingsPageState extends State<SettingsPage> {
                           const SizedBox(height: 6),
                           Text(
                             '当前模型：${activeModel.isEmpty ? selectedProvider.model : activeModel}',
-                            style: TextStyle(color: context.appColors.onBackgroundMid),
+                            style: TextStyle(
+                              color: context.appColors.onBackgroundMid,
+                            ),
                           ),
                           const SizedBox(height: 4),
                           Text(
                             '语音AI增强：${store.isVoiceAiEnabled ? '已开启' : '已关闭'}',
-                            style: TextStyle(color: context.appColors.onBackgroundMid),
+                            style: TextStyle(
+                              color: context.appColors.onBackgroundMid,
+                            ),
                           ),
                         ],
                       ),
@@ -580,7 +599,10 @@ class _SettingsPageState extends State<SettingsPage> {
                     const SizedBox(height: 12),
                     Text(
                       '提示：当前只展示正在生效的服务商配置；切换服务商后，输入框会自动切到对应的模型和 API Key。语音AI增强关闭时，语音仍会按原来的本地规则解析。',
-                      style: TextStyle(fontSize: 12, color: context.appColors.onBackgroundMid),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: context.appColors.onBackgroundMid,
+                      ),
                     ),
                   ],
                 ),
@@ -714,11 +736,85 @@ class _SettingsPageState extends State<SettingsPage> {
                           ),
                         ),
                         const SizedBox(height: 18),
+                        const Text(
+                          '局域网 WebDAV 地址（在家时优先使用，速度更快）',
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            color: Color(0xFF7A8783),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
                         TextFormField(
                           controller: _webdavUrlController,
                           decoration: const InputDecoration(
-                            labelText: '服务器地址',
+                            labelText: '局域网 WebDAV 地址',
+                            hintText: 'http://192.168.x.x/dav/',
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        const Text(
+                          '外网 WebDAV 地址（请优先使用 HTTPS）',
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            color: Color(0xFF7A8783),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        TextFormField(
+                          controller: _webdavExternalUrlController,
+                          decoration: const InputDecoration(
+                            labelText: '外网 WebDAV 地址',
                             hintText: 'https://xxx.zspace.cn/dav/',
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            const Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    '局域网失败时使用外网',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  SizedBox(height: 3),
+                                  Text(
+                                    '开启后会先探测局域网，约 4 秒不可达则自动尝试外网。',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Color(0xFF7A8783),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Switch(
+                              value: store.webdavAutoSelectEndpoint,
+                              onChanged: (value) async {
+                                await store.saveWebdavConfig(
+                                  WebDavConfig(
+                                    localUrl: _webdavUrlController.text,
+                                    externalUrl:
+                                        _webdavExternalUrlController.text,
+                                    username: _webdavUsernameController.text,
+                                    password: _webdavPasswordController.text,
+                                    autoSelectEndpoint: value,
+                                  ),
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        const Text(
+                          '两个地址必须指向同一个 WebDAV 目录并共用账号。公网使用 HTTP 会暴露账号密码和数据。',
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            color: Color(0xFFC95858),
+                            height: 1.35,
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -826,14 +922,18 @@ class _SettingsPageState extends State<SettingsPage> {
                                     ),
                                     const SizedBox(height: 2),
                                     Text(
-                                      store.lastSyncTime == null
-                                          ? '尚未同步'
-                                          : '上次同步 ${_formatSyncTime(store.lastSyncTime!)}',
+                                      store.isSyncInProgress
+                                          ? store.syncPhase.label
+                                          : (store.lastSyncTime == null
+                                                ? '尚未同步'
+                                                : '上次同步 ${_formatSyncTime(store.lastSyncTime!)}${store.lastSyncEndpoint == null ? '' : ' · ${store.lastSyncEndpoint!.label}'}'),
                                       style: TextStyle(
                                         fontSize: 13.5,
                                         fontWeight: FontWeight.w700,
                                         color: store.lastSyncTime == null
-                                            ? context.appColors.onBackgroundLight
+                                            ? context
+                                                  .appColors
+                                                  .onBackgroundLight
                                             : (store.lastSyncSuccess == true
                                                   ? const Color(0xFF2E8B57)
                                                   : const Color(0xFFC95858)),
@@ -898,16 +998,16 @@ class _SettingsPageState extends State<SettingsPage> {
                             Expanded(
                               child: FilledButton(
                                 onPressed: () async {
-                                  await store.setWebdavConfig(
-                                    _webdavUrlController.text.isEmpty
-                                        ? null
-                                        : _webdavUrlController.text,
-                                    _webdavUsernameController.text.isEmpty
-                                        ? null
-                                        : _webdavUsernameController.text,
-                                    _webdavPasswordController.text.isEmpty
-                                        ? null
-                                        : _webdavPasswordController.text,
+                                  await store.saveWebdavConfig(
+                                    WebDavConfig(
+                                      localUrl: _webdavUrlController.text,
+                                      externalUrl:
+                                          _webdavExternalUrlController.text,
+                                      username: _webdavUsernameController.text,
+                                      password: _webdavPasswordController.text,
+                                      autoSelectEndpoint:
+                                          store.webdavAutoSelectEndpoint,
+                                    ),
                                   );
                                   if (mounted) {
                                     showSnack(context, '配置已保存');
@@ -929,7 +1029,8 @@ class _SettingsPageState extends State<SettingsPage> {
                                 style: FilledButton.styleFrom(
                                   minimumSize: const Size.fromHeight(52),
                                 ),
-                                onPressed: _isSyncingToWebdav
+                                onPressed:
+                                    _isSyncingToWebdav || store.isSyncInProgress
                                     ? null
                                     : () => _syncToWebdav(store),
                                 icon: _isSyncingToWebdav
@@ -951,7 +1052,9 @@ class _SettingsPageState extends State<SettingsPage> {
                                 style: OutlinedButton.styleFrom(
                                   minimumSize: const Size.fromHeight(52),
                                 ),
-                                onPressed: _isRestoringFromWebdav
+                                onPressed:
+                                    _isRestoringFromWebdav ||
+                                        store.isSyncInProgress
                                     ? null
                                     : () => _restoreFromWebdav(store),
                                 icon: _isRestoringFromWebdav
@@ -1106,17 +1209,61 @@ class _SettingsPageState extends State<SettingsPage> {
   Future<void> _testWebdavConnection(LedgerStore store) async {
     setState(() => _isTestingConnection = true);
     try {
-      final success = await store.testWebdavConnection();
-      if (mounted) {
-        showSnack(
-          context,
-          success ? '连接成功' : (store.lastWebdavError ?? '连接失败，请检查配置'),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        showSnack(context, '连接失败：$e');
-      }
+      final results = await store.testWebdavConnections();
+      if (!mounted) return;
+      await showModalBottomSheet<void>(
+        context: context,
+        showDragHandle: true,
+        builder: (sheetContext) => SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  '连接测试结果',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: 6),
+                const Text(
+                  '已分别测试已填写的同步地址。',
+                  style: TextStyle(color: Color(0xFF7A8783)),
+                ),
+                const SizedBox(height: 12),
+                ...results.map(
+                  (result) => ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: Icon(
+                      result.success
+                          ? Icons.check_circle_rounded
+                          : Icons.error_outline_rounded,
+                      color: result.success
+                          ? const Color(0xFF2E8B57)
+                          : const Color(0xFFC95858),
+                    ),
+                    title: Text(result.endpoint.label),
+                    subtitle: Text(result.message),
+                    trailing: Text(
+                      result.success
+                          ? '连接成功'
+                          : (result.configured ? '连接失败' : '未配置'),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    onPressed: () => Navigator.of(sheetContext).pop(),
+                    child: const Text('知道了'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
     } finally {
       if (mounted) {
         setState(() => _isTestingConnection = false);
@@ -1469,13 +1616,11 @@ class _UpdateDialogState extends State<_UpdateDialog> {
     });
 
     try {
-      await UpdateService.downloadAndInstall(
-        url,
-        widget.updateInfo.version,
-        (progress) {
-          if (mounted) setState(() => _progress = progress);
-        },
-      );
+      await UpdateService.downloadAndInstall(url, widget.updateInfo.version, (
+        progress,
+      ) {
+        if (mounted) setState(() => _progress = progress);
+      });
     } catch (e) {
       if (mounted) {
         setState(() => _isDownloading = false);
@@ -1484,4 +1629,3 @@ class _UpdateDialogState extends State<_UpdateDialog> {
     }
   }
 }
-

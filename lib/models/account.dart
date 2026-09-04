@@ -3,38 +3,60 @@ import 'package:flutter/material.dart';
 import 'package:ledger_app/models/enums.dart';
 
 class Account {
-  const Account({
+  Account({
     required this.id,
     required this.name,
     required this.balanceInCents,
     required this.type,
     required this.iconKey,
     this.repaymentDay,
-  });
+    int? openingBalanceInCents,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    this.deletedAt,
+  }) : openingBalanceInCents = openingBalanceInCents ?? balanceInCents,
+       createdAt = (createdAt ?? DateTime.now()).toUtc(),
+       updatedAt = (updatedAt ?? createdAt ?? DateTime.now()).toUtc();
 
   final String id;
   final String name;
   final int balanceInCents;
+
+  /// The balance before any recorded entry. This makes a merged balance
+  /// reproducible after records from another device are added.
+  final int openingBalanceInCents;
   final AccountType type;
   final String iconKey;
   final int? repaymentDay;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final DateTime? deletedAt;
 
   Account copyWith({
     String? name,
     int? balanceInCents,
+    int? openingBalanceInCents,
     AccountType? type,
     String? iconKey,
+    DateTime? createdAt,
+    DateTime? updatedAt,
     Object? repaymentDay = unset,
+    Object? deletedAt = unset,
   }) {
     return Account(
       id: id,
       name: name ?? this.name,
       balanceInCents: balanceInCents ?? this.balanceInCents,
+      openingBalanceInCents:
+          openingBalanceInCents ?? this.openingBalanceInCents,
       type: type ?? this.type,
       iconKey: iconKey ?? this.iconKey,
       repaymentDay: repaymentDay == unset
           ? this.repaymentDay
           : repaymentDay as int?,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt == unset ? this.deletedAt : deletedAt as DateTime?,
     );
   }
 
@@ -43,21 +65,32 @@ class Account {
       'id': id,
       'name': name,
       'balanceInCents': balanceInCents,
+      'openingBalanceInCents': openingBalanceInCents,
       'type': type.name,
       'iconKey': iconKey,
       'repaymentDay': repaymentDay,
+      'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt.toIso8601String(),
+      'deletedAt': deletedAt?.toIso8601String(),
     };
   }
 
   factory Account.fromJson(Map<String, Object?> json) {
     final type = accountTypeFromJson(json['type'] as String?);
+    final legacyBalance = json['balanceInCents'] as int;
+    final now = DateTime.now().toUtc();
     return Account(
       id: json['id'] as String,
       name: json['name'] as String,
-      balanceInCents: json['balanceInCents'] as int,
+      balanceInCents: legacyBalance,
+      openingBalanceInCents:
+          json['openingBalanceInCents'] as int? ?? legacyBalance,
       type: type,
       iconKey: json['iconKey'] as String? ?? defaultAccountIconKey(type),
       repaymentDay: json['repaymentDay'] as int?,
+      createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ?? now,
+      updatedAt: DateTime.tryParse(json['updatedAt'] as String? ?? '') ?? now,
+      deletedAt: DateTime.tryParse(json['deletedAt'] as String? ?? ''),
     );
   }
 }

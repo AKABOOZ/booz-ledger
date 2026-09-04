@@ -3,7 +3,7 @@ import 'package:ledger_app/models/category.dart';
 import 'package:ledger_app/models/enums.dart';
 
 class LedgerEntry {
-  const LedgerEntry({
+  LedgerEntry({
     required this.id,
     required this.type,
     required this.amountInCents,
@@ -16,7 +16,11 @@ class LedgerEntry {
     this.incomeCategory,
     this.fromAccountId,
     this.toAccountId,
-  });
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    this.deletedAt,
+  }) : createdAt = (createdAt ?? occurredAt).toUtc(),
+       updatedAt = (updatedAt ?? createdAt ?? occurredAt).toUtc();
 
   final String id;
   final LedgerEntryType type;
@@ -30,12 +34,18 @@ class LedgerEntry {
   final String? incomeCategory;
   final String? fromAccountId;
   final String? toAccountId;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final DateTime? deletedAt;
 
   LedgerEntry copyWith({
     LedgerEntryType? type,
     int? amountInCents,
     DateTime? occurredAt,
     String? note,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    Object? deletedAt = unset,
     Object? category = unset,
     Object? expenseGroup = unset,
     Object? expenseCategory = unset,
@@ -69,6 +79,9 @@ class LedgerEntry {
       toAccountId: toAccountId == unset
           ? this.toAccountId
           : toAccountId as String?,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt == unset ? this.deletedAt : deletedAt as DateTime?,
     );
   }
 
@@ -86,17 +99,21 @@ class LedgerEntry {
       'incomeCategory': incomeCategory,
       'fromAccountId': fromAccountId,
       'toAccountId': toAccountId,
+      'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt.toIso8601String(),
+      'deletedAt': deletedAt?.toIso8601String(),
     };
   }
 
   factory LedgerEntry.fromJson(Map<String, Object?> json) {
+    final occurredAt = _normalizeStoredOccurredAt(
+      DateTime.parse(json['occurredAt'] as String),
+    );
     return LedgerEntry(
       id: json['id'] as String,
       type: LedgerEntryType.values.byName(json['type'] as String),
       amountInCents: json['amountInCents'] as int,
-      occurredAt: _normalizeStoredOccurredAt(
-        DateTime.parse(json['occurredAt'] as String),
-      ),
+      occurredAt: occurredAt,
       note: json['note'] as String? ?? '',
       category: json['category'] as String?,
       expenseGroup: json['expenseGroup'] as String?,
@@ -105,6 +122,11 @@ class LedgerEntry {
       incomeCategory: json['incomeCategory'] as String?,
       fromAccountId: json['fromAccountId'] as String?,
       toAccountId: json['toAccountId'] as String?,
+      createdAt:
+          DateTime.tryParse(json['createdAt'] as String? ?? '') ?? occurredAt,
+      updatedAt:
+          DateTime.tryParse(json['updatedAt'] as String? ?? '') ?? occurredAt,
+      deletedAt: DateTime.tryParse(json['deletedAt'] as String? ?? ''),
     );
   }
 

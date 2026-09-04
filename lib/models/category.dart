@@ -24,33 +24,59 @@ class IncomeCategoryGroup {
 }
 
 class CustomCategory {
-  const CustomCategory({
+  CustomCategory({
+    String? id,
     required this.type,
     required this.groupName,
     required this.name,
     required this.iconKey,
-  });
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    this.deletedAt,
+  }) : id = id ?? legacyId(type, groupName, name),
+       createdAt = (createdAt ?? DateTime.now()).toUtc(),
+       updatedAt = (updatedAt ?? createdAt ?? DateTime.now()).toUtc();
 
+  final String id;
   final LedgerEntryType type;
   final String groupName;
   final String name;
   final String iconKey;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final DateTime? deletedAt;
+
+  static String legacyId(LedgerEntryType type, String groupName, String name) {
+    return '${type.name}|${groupName.trim()}|${name.trim()}';
+  }
 
   Map<String, Object?> toJson() {
     return {
+      'id': id,
       'type': type.name,
       'groupName': groupName,
       'name': name,
       'iconKey': iconKey,
+      'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt.toIso8601String(),
+      'deletedAt': deletedAt?.toIso8601String(),
     };
   }
 
   factory CustomCategory.fromJson(Map<String, Object?> json) {
+    final type = LedgerEntryType.values.byName(json['type'] as String);
+    final groupName = json['groupName'] as String;
+    final name = json['name'] as String;
+    final now = DateTime.now().toUtc();
     return CustomCategory(
-      type: LedgerEntryType.values.byName(json['type'] as String),
-      groupName: json['groupName'] as String,
-      name: json['name'] as String,
+      id: json['id'] as String? ?? legacyId(type, groupName, name),
+      type: type,
+      groupName: groupName,
+      name: name,
       iconKey: json['iconKey'] as String,
+      createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ?? now,
+      updatedAt: DateTime.tryParse(json['updatedAt'] as String? ?? '') ?? now,
+      deletedAt: DateTime.tryParse(json['deletedAt'] as String? ?? ''),
     );
   }
 }
