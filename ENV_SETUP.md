@@ -137,8 +137,13 @@ flutter build apk --release
 
 但要注意：
 
-- 当前 Android release 仍使用 debug signing
-- 适合内部测试，不适合正式上架发布
+- 当前 Android release 仍使用 debug signing；适合 GitHub 面向已安装用户的内部更新，不适合正式应用商店上架。
+- 本工程可能在构建末尾报“找不到 APK”，即使 Gradle 已成功产出文件；同时检查：
+
+```bash
+ls -lh android/app/build/outputs/apk/release/app-release.apk
+ls -lh android/app/build/outputs/flutter-apk/app-release.apk
+```
 
 ## 4. 部署流程（服务器 / 平台、注意事项）
 
@@ -177,13 +182,15 @@ gh release create v<VERSION> \
   --repo AKABOOZ/booz-ledger \
   --title "波哥记账 v<VERSION>" \
   --notes "更新内容" \
-  android/app/build/outputs/flutter-apk/app-release.apk
+  android/app/build/outputs/apk/release/app-release.apk
 ```
 
 ## 数据同步平台
 
-- 用户自己的 NAS / WebDAV
-- 同步逻辑在客户端内执行
+- 用户自己的 NAS / WebDAV，无项目自建同步服务。
+- v1.3.3 起支持局域网与外网双地址；两条地址必须指向同一 WebDAV 目录。
+- 日常同步为“下载最新完整 JSON → 按稳定 ID 合并 → 上传完整 JSON”；打开 App 时可按开关自动执行。
+- 配置中的 URL、用户名和密码使用平台加密存储；同步页不再提供覆盖性恢复入口。
 
 ## 推荐的 Android 交付流程
 
