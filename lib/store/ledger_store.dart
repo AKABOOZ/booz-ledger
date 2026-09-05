@@ -978,7 +978,12 @@ class LedgerStore extends ChangeNotifier {
         final account = _accounts[index];
         final baseline = baselines[account.id];
         if (baseline == null || account.deletedAt != null) continue;
-        _accounts[index] = account.copyWith(openingBalanceInCents: baseline);
+        _accounts[index] = account.copyWith(
+          openingBalanceInCents: baseline,
+          // The repaired baseline must win over the bad account snapshot on
+          // NAS during the next normal merge.
+          updatedAt: DateTime.now().toUtc(),
+        );
         repairedCount++;
       }
       if (repairedCount == 0) {
