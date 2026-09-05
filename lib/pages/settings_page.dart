@@ -25,6 +25,7 @@ class _SettingsPageState extends State<SettingsPage> {
   bool _isImporting = false;
   bool _isTestingConnection = false;
   bool _isSyncingToWebdav = false;
+  bool _isRepairingBalances = false;
   bool _hasLoadedSettings = false;
   AiProvider _selectedAiProvider = AiProvider.deepSeek;
   String _appVersion = '1.0.0';
@@ -1068,6 +1069,47 @@ class _SettingsPageState extends State<SettingsPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    const Text(
+                      '账户余额修复',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    const Text(
+                      '仅用于修复 v1.3.3 同步后账户余额异常翻倍的问题。它会读取 NAS 中升级前的备份来校正账户余额，不会删除流水。',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Color(0xFFC95858),
+                        height: 1.35,
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    OutlinedButton.icon(
+                      onPressed: _isRepairingBalances
+                          ? null
+                          : () => _repairAccountBalances(store),
+                      icon: _isRepairingBalances
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.build_circle_outlined),
+                      label: const Text('修复账户余额'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
                     FilledButton.icon(
                       style: FilledButton.styleFrom(
                         minimumSize: const Size.fromHeight(56),
@@ -1238,6 +1280,40 @@ class _SettingsPageState extends State<SettingsPage> {
       if (mounted) {
         setState(() => _isTestingConnection = false);
       }
+    }
+  }
+
+  Future<void> _repairAccountBalances(LedgerStore store) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('修复异常账户余额？'),
+        content: const Text(
+          '将读取 NAS 中升级前的备份，恢复各账户正确的期初余额，再按当前流水重新计算余额。不会删除任何流水。修复期间请不要同步。',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('取消'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('开始修复'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    setState(() => _isRepairingBalances = true);
+    try {
+      final success = await store.repairAccountBalancesFromNas();
+      if (!mounted) return;
+      showSnack(
+        context,
+        success ? '账户余额已修复，请核对后再同步' : (store.lastWebdavError ?? '修复失败'),
+      );
+    } finally {
+      if (mounted) setState(() => _isRepairingBalances = false);
     }
   }
 

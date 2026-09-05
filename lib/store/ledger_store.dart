@@ -938,6 +938,66 @@ class LedgerStore extends ChangeNotifier {
     }
   }
 
+  /// Emergency repair for accounts affected by v1.3.3's legacy-backup
+  /// migration bug. It uses the newest NAS backup without opening-balance
+  /// metadata to restore account baselines, then replays the current entries.
+  /// Entries themselves are never replaced or deleted.
+  Future<bool> repairAccountBalancesFromNas() async {
+    if (_syncInProgress) {
+      _lastWebdavError = '已有同步任务正在进行，请稍后再试';
+      notifyListeners();
+      return false;
+    }
+    if (!_webdavConfig.isComplete) {
+      _lastWebdavError = '请先配置 WebDAV 地址、用户名和密码';
+      notifyListeners();
+      return false;
+    }
+    _syncInProgress = true;
+    _syncPhase = SyncPhase.merging;
+    notifyListeners();
+    try {
+      final endpoint = await _selectEndpoint();
+      final directory = _webdavDirectoryUri(_webdavConfig.urlFor(endpoint)!);
+      final authorization = _webdavAuthorization(_webdavConfig);
+      final files = await _webDavClient.list(directory, authorization);
+      final backups = await _loadRemoteBackups(directory, authorization, files)
+        ..sort((a, b) => a.payload.exportedAt.compareTo(b.payload.exportedAt));
+      final legacy = backups.lastWhereOrNull(
+        (backup) => !backup.payload.hasOpeningBalanceMetadata,
+      );
+      if (legacy == null) {
+        throw const WebDavException('NAS 中没有可用于修复余额的旧备份');
+      }
+      final baselines = {
+        for (final account in legacy.payload.accounts)
+          account.id: account.openingBalanceInCents,
+      };
+      var repairedCount = 0;
+      for (var index = 0; index < _accounts.length; index++) {
+        final account = _accounts[index];
+        final baseline = baselines[account.id];
+        if (baseline == null || account.deletedAt != null) continue;
+        _accounts[index] = account.copyWith(openingBalanceInCents: baseline);
+        repairedCount++;
+      }
+      if (repairedCount == 0) {
+        throw const WebDavException('旧备份中没有匹配的账户，未修改当前数据');
+      }
+      _rebuildAccountBalances();
+      await _save(waitForDisk: true);
+      _lastWebdavError = null;
+      return true;
+    } on WebDavException catch (error) {
+      _lastWebdavError = error.message;
+      return false;
+    } finally {
+      _syncInProgress = false;
+      _syncPhase = SyncPhase.idle;
+      notifyListeners();
+    }
+  }
+
   Future<WebDavEndpoint> _selectEndpoint() async {
     final errors = <String>[];
     final auth = _webdavAuthorization(_webdavConfig);
@@ -1112,6 +1172,16 @@ class _RemoteBackup {
 
   final WebDavFileInfo file;
   final LedgerSyncPayload payload;
+}
+
+extension<T> on Iterable<T> {
+  T? lastWhereOrNull(bool Function(T item) test) {
+    T? result;
+    for (final item in this) {
+      if (test(item)) result = item;
+    }
+    return result;
+  }
 }
 
 class LedgerScope extends InheritedNotifier<LedgerStore> {
