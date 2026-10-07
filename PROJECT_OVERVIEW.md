@@ -19,6 +19,7 @@
   - 账户新增、编辑、删除
   - 支持现金、储蓄卡、在线支付、信用卡等类型
   - 支持账户图标和还款日等信息
+  - 记一笔账户选择浮层展示独立维护的最近使用账户（最多 4 个）
 - 分类体系
   - 内置支出 / 收入大类与小类
   - 支持自定义小类
@@ -64,6 +65,7 @@
 - 状态与数据层：
   - `LedgerStore extends ChangeNotifier`
   - 负责加载 / 保存数据、账户余额计算、备份同步、导入导出
+  - 使用 `recent_account_ids_v1` 单独保存账户 MRU；表单默认账户只用于预填，不参与最近使用排序
 - 领域模型：
   - `Account`
   - `LedgerEntry`
@@ -253,6 +255,10 @@
   - 修复输入记账备注后，在 OPPO/Realme 等 ColorOS 系手机上屏幕四周出现绿色描边的 bug
   - 根因：ColorOS 系统级无障碍焦点高亮（`defaultFocusHighlightEnabled`）在焦点转移时被触发
   - 修复方案：在 Android `styles.xml` 中禁用 `android:defaultFocusHighlightEnabled`；Flutter 层增加占位 `FocusNode` 防止焦点丢失到根 View
+- 最近使用账户修复（v1.3.6）
+  - 账户浮层的前四项改为真实账户 MRU，不再从支出、收入、转账的表单默认账户推断
+  - 每次新增或编辑流水保存成功后，将涉及账户置顶、去重，仅保留 4 项
+  - 删除账户或导入新账本时同步清理 MRU；新增回归测试覆盖核心规则
 
 ### 待完成功能 / 可继续演进项
 
@@ -263,7 +269,7 @@
 - 更稳健的数据存储
   - 目前仍是 `SharedPreferences + JSON`，数据规模增大后风险上升
 - 更完整的测试体系
-  - 目前没有成体系的单元测试 / 集成测试 / 回归测试
+  - 已有账户 MRU 的单元回归测试，但整体仍缺少成体系的单元测试 / 集成测试 / 回归测试
 - 更正式的发布流程
   - Android release 仍使用 debug signing
   - 没有正式 CI/CD

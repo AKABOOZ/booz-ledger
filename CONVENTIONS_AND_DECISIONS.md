@@ -242,6 +242,18 @@
 - 双 ThemeData 方案可以充分利用 Material 3 的 dark color scheme 生成能力
 - 语义色系统让新代码不容易写错颜色
 
+### 决策 10：账户“最近使用”独立维护 MRU 列表
+
+- `LedgerStore` 通过 `recent_account_ids_v1` 单独持久化最近使用的账户 ID，最多保留 4 项。
+- 表单默认账户（`entry_form_defaults_v1`）仅用于预填记一笔表单，不能再用于推断最近使用账户。
+- 成功新增或编辑流水后，按流水的 `fromAccountId`、`toAccountId` 更新 MRU；转账按“转出 → 转入”顺序纳入列表。
+- 删除账户或导入一份新账本时，要同步移除或清空 MRU，避免展示不存在账户或上一账本的账户。
+
+原因：
+
+- 各记账类型的表单默认值会长期保留，且顺序固定，不能代表用户最新使用的账户。
+- 独立的 MRU 记录才能让账户选择浮层稳定展示真正最近使用的四个账户。
+
 ## 4. Codex 开发时的对话要点总结（关键需求变更）
 
 以下是最近一轮开发中，已经确认并落地的关键需求 / 事实，接手者应默认成立。
@@ -400,6 +412,14 @@
 - 修复方案（两层防御）：
   1. **Android 原生层**：在 `android/app/src/main/res/values/styles.xml` 和 `values-night/styles.xml` 的 `NormalTheme` 中添加 `<item name="android:defaultFocusHighlightEnabled">false</item>`
   2. **Flutter 层**：在 `_closeNoteEditor()` 中 `unfocus()` 后立即调用占位 `FocusNode.requestFocus()`，防止焦点落到根 View；在备注编辑面板 `Column` 末尾放置一个 0×0 的隐藏 `TextField` 承接焦点
+
+### 需求变更 22：修复账户选择浮层的“最近使用”排序（v1.3.6）
+
+- 问题：账户选择浮层顶部四项曾按支出、收入、转账三类表单的默认账户固定拼接，不是实际最近使用过的账户。
+- 修复：新增独立且持久化的账户 MRU 列表；成功保存流水后，以实际涉及账户更新列表，去重并仅保留 4 项。
+- 转账：转出账户与转入账户都会写入，顺序为“转出 → 转入”。
+- 数据边界：删除账户时移除该账户；导入新账本时清空列表；已有表单默认账户逻辑保持不变。
+- 测试：`test/recent_accounts_test.dart` 覆盖顺序、去重、容量、重启恢复与删除账户清理。
 
 ### 对后续 AI 的提醒
 

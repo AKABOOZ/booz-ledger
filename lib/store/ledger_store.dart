@@ -15,6 +15,29 @@ import 'package:ledger_app/services/ledger_sync_merge.dart';
 import 'package:ledger_app/services/webdav_client.dart';
 import 'package:ledger_app/services/webdav_config_store.dart';
 
+const _recentAccountsLimit = 4;
+
+List<String> updateRecentAccountIds(
+  Iterable<String> existingIds,
+  Iterable<String?> newlyUsedIds,
+) {
+  final result = <String>[];
+  final seen = <String>{};
+
+  void add(String? id) {
+    if (id == null || id.isEmpty || !seen.add(id)) return;
+    result.add(id);
+  }
+
+  for (final id in newlyUsedIds) {
+    add(id);
+  }
+  for (final id in existingIds) {
+    add(id);
+  }
+  return result.take(_recentAccountsLimit).toList();
+}
+
 class LedgerStore extends ChangeNotifier {
   static const _storageKey = 'ledger_app_state_v1';
   static const _apiKey = 'baidu_api_key';
@@ -27,6 +50,7 @@ class LedgerStore extends ChangeNotifier {
   static const _voiceAiEnabledKey = 'voice_ai_enabled';
   static const _salaryIncomeMaskedKey = 'salary_income_masked';
   static const _entryFormDefaultsKey = 'entry_form_defaults_v1';
+  static const _recentAccountIdsKey = 'recent_account_ids_v1';
   static const _webdavAutoSyncEnabledKey = 'webdav_auto_sync_enabled';
   static const _lastWebdavEndpointKey = 'last_webdav_endpoint_v2';
   static const _themeModeKey = 'theme_mode';
@@ -43,6 +67,7 @@ class LedgerStore extends ChangeNotifier {
   int _themeMode = 0; // 0=system, 1=light, 2=dark
   bool _isVoiceAiEnabled = true;
   final Map<LedgerEntryType, EntryFormDefaults> _entryFormDefaults = {};
+  List<String> _recentAccountIds = const [];
   String? _baiduApiKey;
   String? _baiduSecretKey;
   AiProvider _aiProvider = AiProvider.deepSeek;
@@ -369,6 +394,14 @@ class LedgerStore extends ChangeNotifier {
           }),
         );
     }
+    final rawRecentAccountIds = prefs.getString(_recentAccountIdsKey);
+    if (rawRecentAccountIds != null) {
+      final decoded = jsonDecode(rawRecentAccountIds) as List<Object?>;
+      _recentAccountIds = updateRecentAccountIds(
+        const [],
+        decoded.whereType<String>().where((id) => accountById(id) != null),
+      );
+    }
     _webdavConfig = await _webDavConfigStore.load(prefs);
     final lastSyncTimeStr = prefs.getString('last_sync_time');
     if (lastSyncTimeStr != null) {
@@ -415,10 +448,12 @@ class LedgerStore extends ChangeNotifier {
     _customCategories
       ..clear()
       ..addAll(data.customCategories);
+    _recentAccountIds = const [];
     for (final entry in _entries) {
       _applyEntryEffect(entry);
     }
     await _save(waitForDisk: true);
+    await _persistRecentAccountIds();
   }
 
   Future<void> addAccount(Account account) async {
@@ -464,13 +499,18 @@ class LedgerStore extends ChangeNotifier {
         deletedAt: now,
       );
     }
+    _recentAccountIds = _recentAccountIds
+        .where((id) => id != accountId)
+        .toList();
     await _save(waitForDisk: false);
+    await _persistRecentAccountIds();
   }
 
   Future<void> addEntry(LedgerEntry entry) async {
     _entries.add(entry);
     _applyEntryEffect(entry);
     await _save(waitForDisk: false);
+    await rememberRecentAccounts([entry.fromAccountId, entry.toAccountId]);
   }
 
   Future<void> updateEntry(LedgerEntry entry) async {
@@ -485,6 +525,7 @@ class LedgerStore extends ChangeNotifier {
     _entries[index] = updated;
     _applyEntryEffect(updated);
     await _save(waitForDisk: false);
+    await rememberRecentAccounts([updated.fromAccountId, updated.toAccountId]);
   }
 
   Future<void> deleteEntry(String entryId) async {
@@ -511,34 +552,26 @@ class LedgerStore extends ChangeNotifier {
     await prefs.setString(_entryFormDefaultsKey, payload);
   }
 
-  List<Account> recentAccounts({int limit = 4}) {
-    final seen = <String>{};
-    final result = <Account>[];
-    void add(String? id) {
-      if (id == null || seen.contains(id)) {
-        return;
-      }
-      final account = accountById(id);
-      if (account == null) {
-        return;
-      }
-      seen.add(id);
-      result.add(account);
-    }
+  Future<void> rememberRecentAccounts(Iterable<String?> accountIds) async {
+    _recentAccountIds = updateRecentAccountIds(
+      _recentAccountIds,
+      accountIds.where((id) => accountById(id) != null),
+    );
+    await _persistRecentAccountIds();
+  }
 
-    for (final type in const [
-      LedgerEntryType.expense,
-      LedgerEntryType.income,
-      LedgerEntryType.transfer,
-    ]) {
-      final defaults = defaultsFor(type);
-      add(defaults.fromAccountId);
-      add(defaults.toAccountId);
-      if (result.length >= limit) {
-        break;
-      }
-    }
-    return result.take(limit).toList();
+  Future<void> _persistRecentAccountIds() async {
+    final prefs = _prefs ?? await SharedPreferences.getInstance();
+    _prefs = prefs;
+    await prefs.setString(_recentAccountIdsKey, jsonEncode(_recentAccountIds));
+  }
+
+  List<Account> recentAccounts({int limit = _recentAccountsLimit}) {
+    return _recentAccountIds
+        .map(accountById)
+        .whereType<Account>()
+        .take(limit)
+        .toList();
   }
 
   Account? accountById(String? id) {
@@ -546,7 +579,7 @@ class LedgerStore extends ChangeNotifier {
       return null;
     }
     for (final account in _accounts) {
-      if (account.id == id) {
+      if (account.id == id && account.deletedAt == null) {
         return account;
       }
     }
